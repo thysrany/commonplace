@@ -231,6 +231,18 @@
   .mini svg{width:14px;height:14px;}
   .mini:hover{color:var(--accent);border-color:var(--accent-tint-2);background:var(--card);}
 
+  /* ---------- Collapsible NOTE card (Notes tab) ---------- */
+  .notecard-sum{display:flex;align-items:flex-start;gap:12px;cursor:pointer;list-style:none;}
+  .notecard-sum::-webkit-details-marker{display:none;}
+  .notecard-line{flex:1;min-width:0;}
+  .notecard-sum .ntitle{margin:0;transition:color .15s;}
+  .notecard-sum:hover .ntitle{color:var(--accent-2);}
+  .notecard-chev{flex:0 0 auto;color:var(--muted);display:grid;place-items:center;transition:transform .22s ease,color .15s;margin-top:2px;}
+  .notecard-chev svg{width:18px;height:18px;}
+  .notecard-sum:hover .notecard-chev{color:var(--accent);}
+  details.notecard[open] .notecard-chev{transform:rotate(90deg);}
+  .notecard-body{margin-top:12px;animation:fade .2s ease;}
+
   /* empty state */
   .empty-state{text-align:center;padding:54px 20px;color:var(--muted);}
   .empty-state .big{font-family:var(--serif);font-size:22px;color:var(--ink-soft);margin-bottom:8px;font-style:italic;}
@@ -669,20 +681,40 @@ function renderList(){
 
   list.innerHTML = items.map((it,i)=>{
     const tags = (it.tags&&it.tags.length)?`<div class="ctags">${it.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:'';
-    const body = type==='quotes'
-      ? `<div class="qtext">${esc(it.text)}</div>${it.author?`<div class="by">${esc(it.author)}</div>`:''}`
-      : type==='books'
-      ? bookCardBody(it)
-      : `${it.title?`<div class="ntitle">${esc(it.title)}</div>`:''}<div class="ntext">${esc(it.text)}</div>`;
+    if(type==='quotes'){
+      const body = `<div class="qtext">${esc(it.text)}</div>${it.author?`<div class="by">${esc(it.author)}</div>`:''}`;
+      return `<article class="card" style="animation-delay:${Math.min(i*40,240)}ms" data-id="${it.id}">
+        ${body}${tags}
+        <div class="foot">
+          <span class="date">${fmtDate(it.created)}</span>
+          <div class="acts">
+            <button class="mini" data-act="copy">${I.copy}Copy</button>
+            <button class="mini" data-act="edit">${I.edit}Edit</button>
+          </div>
+        </div>
+      </article>`;
+    }
+    if(type==='books'){
+      return `<article class="card" style="animation-delay:${Math.min(i*40,240)}ms" data-id="${it.id}">${bookCardBody(it)}</article>`;
+    }
+    // ----- NOTES: collapsed to title; tap to reveal text -----
+    const hasText = it.text && it.text.trim();
+    const titleHtml = `<span class="ntitle">${esc(it.title || 'Untitled note')}</span>`;
+    const inner = hasText
+      ? `<details class="notecard">
+           <summary class="notecard-sum"><span class="notecard-line">${titleHtml}</span><span class="notecard-chev">${I.chevron}</span></summary>
+           <div class="notecard-body"><div class="ntext">${esc(it.text)}</div>${tags}</div>
+         </details>`
+      : `<div class="notecard-sum" style="cursor:default"><span class="notecard-line">${titleHtml}</span></div>${tags}`;
     return `<article class="card" style="animation-delay:${Math.min(i*40,240)}ms" data-id="${it.id}">
-      ${body}${type==='books'?'':tags}
-      ${type==='books' ? '' : `<div class="foot">
+      ${inner}
+      <div class="foot">
         <span class="date">${fmtDate(it.created)}</span>
         <div class="acts">
           <button class="mini" data-act="copy">${I.copy}Copy</button>
           <button class="mini" data-act="edit">${I.edit}Edit</button>
         </div>
-      </div>`}
+      </div>
     </article>`;
   }).join('');
 
