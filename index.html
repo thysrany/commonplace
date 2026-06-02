@@ -428,7 +428,6 @@
     <p>Sign in to keep your quotes, notes, and sources in your account — so they're there on any device you sign in from.</p>
     <button class="gbtn" id="gBtn"><span class="g-ico"></span>Continue with Google</button>
     <div class="ag-spin" id="agSpin">Signing in…</div>
-    <button class="ag-local" id="agLocal">Use it on this device without signing in</button>
   </div>
 </div>
 
@@ -1206,7 +1205,6 @@ function updateBanner(){
 function boot(){
   $id('gBtn').onclick = doSignIn;
   const gico = document.querySelector('#gBtn .g-ico'); if(gico) gico.innerHTML = GOOGLE_G;
-  $id('agLocal').onclick = ()=>{ try{ localStorage.setItem(LOCALOK_KEY,'1'); }catch(e){} hideGate(); };
   paintAcct();
   const saved = getSavedAcct();
   if(saved){
@@ -1222,7 +1220,7 @@ function boot(){
     });
   }else{
     renderFeatured(true); renderAll(); updateBanner();
-    if(localStorage.getItem(LOCALOK_KEY)) hideGate(); else showGate();
+    showGate();
   }
 }
 boot();
