@@ -176,6 +176,15 @@
   .bookcard-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:3px;}
   .bookcard-meta .bauthor{margin:0;}
   .bookcard-meta .metadot{color:var(--muted);opacity:.45;}
+  .bookcard-meta .bn-num{color:var(--ink-soft);font-weight:600;}
+  .bn-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:11px;}
+  .bn-search-wrap{position:relative;flex:1;min-width:0;}
+  .bn-search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted);}
+  .bn-search{width:100%;font-family:var(--sans);font-size:13.5px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:8px 12px 8px 32px;}
+  .bn-search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
+  .bn-allbtn{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:9px;padding:8px 13px;font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s;}
+  .bn-allbtn:hover{color:var(--accent);border-color:var(--accent-tint-2);}
+  .bn-count{font-size:12px;color:var(--muted);margin:-3px 0 10px;display:none;}
   .bookcard-sum::-webkit-details-marker{display:none;}
   .bookcard-line{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
   .bookcard-sum .ntitle{margin:0;transition:color .15s;}
@@ -344,6 +353,9 @@
     .modal{padding:20px;}
     .modal-foot{flex-direction:column-reverse;align-items:stretch;}
     .modal-foot .right{justify-content:flex-end;}
+    .tabs{display:flex;flex-wrap:nowrap;width:100%;gap:3px;}
+    .tab{flex:1;min-width:0;justify-content:center;padding:9px 6px;font-size:13px;gap:5px;}
+    .tab .count{font-size:10px;padding:1px 5px;}
   }
 </style>
 </head>
@@ -679,6 +691,28 @@ function renderList(){
     const it = state[type].find(x=>x.id===card.dataset.id);
     card.querySelector('[data-act="copy"]').onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); copyText(entryString(type,it)); };
     card.querySelector('[data-act="edit"]').onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); openEditor('edit', type, it.id); };
+    const bs = card.querySelector('.bn-search');
+    if(bs){
+      const cnt = card.querySelector('.bn-count');
+      const rows = [...card.querySelectorAll('.booknotes > .bnote')];
+      bs.addEventListener('input', ()=>{
+        const q = bs.value.trim().toLowerCase();
+        let shown = 0;
+        rows.forEach(r=>{ const hit = !q || (r.getAttribute('data-find')||'').includes(q); r.style.display = hit?'':'none'; if(hit) shown++; });
+        cnt.textContent = q ? `${shown} of ${rows.length} notes` : '';
+        cnt.style.display = q ? 'block' : 'none';
+      });
+    }
+    const allBtn = card.querySelector('.bn-allbtn');
+    if(allBtn){
+      const dets = [...card.querySelectorAll('.booknotes > details.bnote')];
+      allBtn.addEventListener('click', (e)=>{
+        e.preventDefault(); e.stopPropagation();
+        const anyClosed = dets.some(d=>!d.open);
+        dets.forEach(d=>{ d.open = anyClosed; });
+        allBtn.textContent = anyClosed ? 'Collapse all' : 'Expand all';
+      });
+    }
   });
 }
 
@@ -699,19 +733,32 @@ function bookString(b){
 function bookCardBody(it){
   const meta = [`<span class="badge">${typeLabel(it.type)}</span>`];
   if(it.link) meta.push(`<a class="blink" href="${esc(safeUrl(it.link))}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${I.link}Open</a>`);
-  const notes = (it.notes||[]).map(n=>{
+  const noteArr = it.notes||[];
+  const notes = noteArr.map(n=>{
     const loc = noteLocation(n, it.type);
+    const find = esc(((loc||'')+' '+(n.title||'')+' '+(n.text||'')).toLowerCase());
     const line = `<span class="bnt-line">${loc?`<span class="loc">${esc(loc)}</span>`:''}<span class="bnt-title">${esc(n.title||'Untitled note')}</span></span>`;
     if(n.text){
-      return `<details class="bnote">
+      return `<details class="bnote" data-find="${find}">
         <summary class="bnote-sum">${line}<span class="chev">${I.chevron}</span></summary>
         <div class="bnt-text">${esc(n.text)}</div>
       </details>`;
     }
-    return `<div class="bnote no-toggle"><div class="bnote-sum" style="cursor:default">${line}</div></div>`;
+    return `<div class="bnote no-toggle" data-find="${find}"><div class="bnote-sum" style="cursor:default">${line}</div></div>`;
   }).join('');
+  const count = noteArr.length;
+  const bigList = count > 5;
+  const toolbar = bigList ? `<div class="bn-toolbar">
+      <div class="bn-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="bn-search" data-book="${it.id}" placeholder="Search ${count} notes…">
+      </div>
+      <button class="bn-allbtn" data-book="${it.id}" type="button">Expand all</button>
+    </div>
+    <div class="bn-count" data-book="${it.id}"></div>` : '';
   const metaText = [it.author?`by ${esc(it.author)}`:'', fmtDate(it.created)].filter(Boolean).join('  ·  ');
   const tagPills = (it.tags&&it.tags.length)? it.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('') : '';
+  const countChip = count ? `<span class="metadot">·</span><span class="bn-num">${count} ${count===1?'note':'notes'}</span>` : '';
   return `<details class="bookcard">
     <summary class="bookcard-sum">
       <span class="bookcard-line">
@@ -719,6 +766,7 @@ function bookCardBody(it){
         <span class="bookcard-meta">
           <span class="bauthor">${metaText}</span>
           ${tagPills?`<span class="metadot">·</span>${tagPills}`:''}
+          ${countChip}
         </span>
       </span>
       <span class="bookcard-acts">
@@ -729,6 +777,7 @@ function bookCardBody(it){
     </summary>
     <div class="bookcard-body">
       <div class="bmeta">${meta.join('<span class="dot">·</span>')}</div>
+      ${toolbar}
       ${notes ? `<div class="booknotes">${notes}</div>` : '<div class="bnt-empty">No notes added yet.</div>'}
     </div>
   </details>`;
@@ -851,7 +900,7 @@ function openEditor(mode, type, id){
         const m = locMode(editing.bookType);
         const ff = m==='page'?'page' : m==='track'?'track' : m==='time'?'min' : 'title';
         const el = nc.querySelector(`[data-nid="${n.id}"][data-field="${ff}"]`);
-        if(el) el.focus();
+        if(el){ el.scrollIntoView({block:'center', behavior:'smooth'}); el.focus(); }
       }
     });
     renderBookNotes();
