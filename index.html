@@ -169,8 +169,11 @@
   /* tag pills (display) */
   .tag{
     font-size:11px;font-weight:600;letter-spacing:.02em;background:var(--accent-tint);color:var(--accent-2);
-    padding:3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;
+    padding:3px 6px 3px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;
   }
+  .tag .tag-rm{background:none;border:none;cursor:pointer;color:var(--accent-2);display:grid;place-items:center;border-radius:4px;padding:1px 2px;opacity:.6;transition:.12s;}
+  .tag .tag-rm:hover{opacity:1;background:var(--accent-tint-2);}
+  .tag .tag-rm svg{width:11px;height:11px;}
 
   /* ---------- Cards ---------- */
   .list{display:flex;flex-direction:column;gap:14px;}
@@ -735,7 +738,7 @@ function renderList(){
   }
 
   list.innerHTML = items.map((it,i)=>{
-    const tags = (it.tags&&it.tags.length)?`<div class="ctags">${it.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:'';
+    const tags = (it.tags&&it.tags.length)?`<div class="ctags">${it.tags.map(t=>tagPill(t,type,it.id)).join('')}</div>`:'';
     const body = type==='quotes'
       ? `<div class="qtext">${esc(it.text)}</div>${it.author?`<div class="by">${esc(it.author)}</div>`:''}`
       : type==='books'
@@ -782,11 +785,32 @@ function renderList(){
       });
     }
   });
+  // delegated handler for inline tag removal across all cards
+  list.onclick = (e)=>{
+    const btn = e.target.closest('.tag-rm');
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    removeTag(btn.dataset.type, btn.dataset.id, btn.dataset.tag);
+  };
 }
 
 function renderAll(){ renderChrome(); renderTags(); renderList(); }
 
 /* ---------- copy / share strings ---------- */
+function removeTag(type, id, tag){
+  const it = state[type].find(x=>x.id===id);
+  if(!it) return;
+  if(type==='books' && (it.tags||[]).length<=1){ toast('Sources must keep at least one tag'); return; }
+  it.tags = (it.tags||[]).filter(t=>t.toLowerCase()!==tag.toLowerCase());
+  writeStore(); renderTags(); renderList(); toast('Tag removed', true);
+}
+// builds a tag pill — with a remove × when type+id are provided
+function tagPill(t, type, id){
+  const rm = (type&&id)
+    ? `<button type="button" class="tag-rm" data-tag="${esc(t)}" data-type="${type}" data-id="${id}" aria-label="Remove tag">${I.x}</button>`
+    : '';
+  return `<span class="tag">${esc(t)}${rm}</span>`;
+}
 function quoteString(q){ return `"${q.text}"${q.author?` — ${q.author}`:''}`; }
 function noteString(n){ return `${n.title?n.title+'\n\n':''}${n.text}`; }
 function bookString(b){
@@ -825,7 +849,7 @@ function bookCardBody(it){
     </div>
     <div class="bn-count" data-book="${it.id}"></div>` : '';
   const metaText = [it.author?`by ${esc(it.author)}`:'', fmtDate(it.created)].filter(Boolean).join('  ·  ');
-  const tagPills = (it.tags&&it.tags.length)? it.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('') : '';
+  const tagPills = (it.tags&&it.tags.length)? it.tags.map(t=>tagPill(t,'books',it.id)).join('') : '';
   const countChip = count ? `<span class="metadot">·</span><span class="bn-num">${count} ${count===1?'note':'notes'}</span>` : '';
   return `<details class="bookcard">
     <summary class="bookcard-sum">
