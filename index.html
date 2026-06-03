@@ -193,7 +193,7 @@
   .blink svg{width:13px;height:13px;}
   /* collapsible book card */
   .bookcard{}
-  .bookcard-sum{display:flex;align-items:flex-start;gap:12px;cursor:pointer;list-style:none;}
+  .bookcard-sum{list-style:none;} /* entry-sum handles display/flex/align/gap */
   .bookcard-meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:3px;}
   .bookcard-meta .bauthor{margin:0;}
   .bookcard-meta .metadot{color:var(--muted);opacity:.45;}
@@ -963,21 +963,23 @@ function bookCardBody(it){
   const metaText = [it.author?`by ${esc(it.author)}`:'', fmtDate(it.created)].filter(Boolean).join('  ·  ');
   const tagPills = (it.tags&&it.tags.length)? it.tags.map(t=>tagPill(t,'books',it.id)).join('') : '';
   const countChip = count ? `<span class="metadot">·</span><span class="bn-num">${count} ${count===1?'note':'notes'}</span>` : '';
+  const metaSpan = metaText ? `<span class="ep-author">${metaText}</span>` : '';
   return `<details class="bookcard">
-    <summary class="bookcard-sum">
-      <span class="bookcard-line">
-        <span class="ntitle">${esc(it.title||'Untitled')}</span>
-        <span class="bookcard-meta">
-          <span class="bauthor">${metaText}</span>
+    <summary class="entry-sum bookcard-sum">
+      <span class="entry-preview">
+        <span class="ep-main ep-bold">${esc(it.title||'Untitled')}</span>
+        <span class="ep-meta">
+          ${metaSpan}
           ${tagPills?`<span class="metadot">·</span>${tagPills}`:''}
           ${countChip}
         </span>
       </span>
-      <button class="dots-btn" data-type="books" data-id="${it.id}" aria-label="Options">${I.dots}</button>
       <span class="bchev">${I.chevron}</span>
+      <button class="dots-btn" data-type="books" data-id="${it.id}" aria-label="Options">${I.dots}</button>
     </summary>
     <div class="bookcard-body">
       <div class="bmeta">${meta.join('<span class="dot">·</span>')}</div>
+      ${tagPills?`<div class="ctags">${tagPills}</div>`:''}
       ${toolbar}
       ${notes ? `<div class="booknotes">${notes}</div>` : '<div class="bnt-empty">No notes added yet.</div>'}
     </div>
