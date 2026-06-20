@@ -93,6 +93,10 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .mv-actions-badge.done{background:rgba(80,170,110,.12);border-color:rgba(80,170,110,.3);color:#3a7a52;}
 .action-list{display:flex;flex-direction:column;gap:10px;}
 .action-item{display:flex;align-items:flex-start;gap:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.ai-body{flex:1;min-width:0;}
+.ai-due{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);margin-top:3px;}
+.ai-due svg{width:11px;height:11px;flex:0 0 auto;}
+.ai-due.overdue{color:#c62828;font-weight:600;}
 .action-check{width:20px;height:20px;border:2px solid var(--line);border-radius:5px;background:var(--card);display:grid;place-items:center;flex:0 0 auto;margin-top:1px;transition:.15s;}
 .action-item.done .action-check{background:var(--accent);border-color:var(--accent);}
 .action-check svg{display:none;width:12px;height:12px;}
@@ -103,7 +107,10 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 
 /* Meeting editor */
 .action-editor{display:flex;flex-direction:column;gap:7px;}
-.ae-row{display:flex;gap:7px;align-items:center;}
+.ae-row{display:flex;gap:7px;align-items:flex-start;}
+.ae-row-main{flex:1;display:flex;flex-direction:column;gap:5px;}
+.ae-date{font-family:var(--sans);font-size:13px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;width:100%;}
+.ae-date:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
 .ae-input{flex:1;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px;}
 .ae-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
 .ae-rm{border:none;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;border-radius:7px;padding:6px;transition:.12s;flex:0 0 auto;}
@@ -591,7 +598,7 @@ function normalizeState(){
   if(!Array.isArray(state.meetingItems)) state.meetingItems=[];
   state.entries.forEach(e=>{ if(!e.noteType) e.noteType='plain'; if(!Array.isArray(e.sections)) e.sections=[]; });
   state.quotes.forEach(q=>{ if(!q.source) q.source=''; });
-  state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; });
+  state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; m.actions.forEach(a=>{ if(!a.due) a.due=''; }); });
 }
 
 /* ---------- State ---------- */
@@ -1113,16 +1120,16 @@ function fmtMeetingDate(d){
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function projectName(id){ const p=state.meetingProjects.find(x=>x.id===id); return p?p.name:''; }
 function meetingString(m){
+  const sep='\n\n---\n\n';
   const parts=[];
-  if(m.title) parts.push(m.title);
-  parts.push(fmtMeetingDate(m.date));
-  if(m.attendees) parts.push('Attendees: '+m.attendees);
-  if(m.agenda) parts.push('AGENDA\n'+m.agenda);
-  if(m.discussion) parts.push('DISCUSSION\n'+m.discussion);
-  if(m.decisions) parts.push('DECISIONS\n'+m.decisions);
-  const acts=(m.actions||[]);
-  if(acts.length) parts.push('ACTION ITEMS\n'+acts.map(a=>(a.done?'[x]':'[ ]')+' '+a.text).join('\n'));
-  return parts.join('\n\n');
+  const head=[m.title,fmtMeetingDate(m.date),m.attendees?'Attendees: '+m.attendees:''].filter(Boolean).join('\n');
+  if(head) parts.push(head);
+  if(m.agenda&&m.agenda.trim()) parts.push('AGENDA\n'+m.agenda.trim());
+  if(m.discussion&&m.discussion.trim()) parts.push('DISCUSSION\n'+m.discussion.trim());
+  if(m.decisions&&m.decisions.trim()) parts.push('DECISIONS\n'+m.decisions.trim());
+  const acts=(m.actions||[]).filter(a=>a.text);
+  if(acts.length) parts.push('ACTION ITEMS\n'+acts.map(a=>`${a.done?'✓':'○'}  ${a.text}${a.due?' (due '+fmtMeetingDate(a.due)+')':''}`).join('\n'));
+  return parts.join(sep);
 }
 function actionBadge(m){
   const acts=m.actions||[], total=acts.length, done=acts.filter(a=>a.done).length;
@@ -1192,6 +1199,7 @@ function renderMeeting(){
   const m=state.meetingItems.find(x=>x.id===ui.meetingId);
   if(!m){ navigateToProject(ui.meetingProjectId); return; }
   const acts=m.actions||[], total=acts.length, done=acts.filter(a=>a.done).length;
+  const today=new Date().toISOString().slice(0,10);
   const checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
   const content=document.getElementById('appContent');
   content.innerHTML=`<div class="meeting-view">
@@ -1218,17 +1226,27 @@ function renderMeeting(){
         ${total?`<span class="mv-actions-badge ${done===total?'done':''}">${done}/${total} done</span>`:''}
       </div>
       ${total?`<div class="action-list" id="actionList">
-        ${acts.map(a=>`<div class="action-item ${a.done?'done':''}" data-aid="${a.id}" data-mid="${m.id}">
-          <div class="action-check">${checkSvg}</div>
-          <span class="action-text">${esc(a.text)}</span>
-        </div>`).join('')}
+        ${acts.map(a=>{
+          const overdue=!a.done&&a.due&&a.due<today;
+          return `<div class="action-item ${a.done?'done':''}" data-aid="${a.id}" data-mid="${m.id}">
+            <div class="action-check">${checkSvg}</div>
+            <div class="ai-body">
+              <span class="action-text">${esc(a.text)}</span>
+              ${a.due?`<span class="ai-due${overdue?' overdue':''}">${I.calendar} ${esc(fmtMeetingDate(a.due))}</span>`:''}
+            </div>
+          </div>`;
+        }).join('')}
       </div>`:`<div class="mv-section-empty">No action items.</div>`}
     </div>
     <div class="mv-footer">
       <span class="ev-date">${fmtDate(m.created)}</span>
-      <button class="btn btn-ghost" id="mvEditBtn">${I.edit} Edit</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" id="mvCopyBtn">${I.copy} Copy</button>
+        <button class="btn btn-ghost" id="mvEditBtn">${I.edit} Edit</button>
+      </div>
     </div>
   </div>`;
+  document.getElementById('mvCopyBtn').onclick=()=>copyText(meetingString(m));
   document.getElementById('mvEditBtn').onclick=()=>openMeetingEditor('edit',m.projectId,m.id);
   document.getElementById('actionList')?.querySelectorAll('.action-item').forEach(item=>{
     item.onclick=()=>toggleAction(item.dataset.mid,item.dataset.aid);
@@ -1329,19 +1347,34 @@ function renderMeetingProjectPicker(){
 function renderMeetingEditorActions(){
   const c=document.getElementById('editorActions'); if(!c) return;
   c.innerHTML=(editing.draftActions||[]).map(a=>`<div class="ae-row">
-    <input class="ae-input" data-aid="${a.id}" placeholder="Action item…" value="${esc(a.text)}">
+    <div class="ae-row-main">
+      <input class="ae-input" data-aid="${a.id}" placeholder="Action item…" value="${esc(a.text)}">
+      <input class="ae-date" type="date" data-aid-date="${a.id}" value="${a.due||''}" title="Due date (optional)">
+    </div>
     <button type="button" class="ae-rm" data-aid="${a.id}">${I.trash}</button>
   </div>`).join('');
-  c.oninput=e=>{ const t=e.target; const a=editing.draftActions.find(x=>x.id===t.dataset.aid); if(a) a.text=t.value; };
+  c.oninput=e=>{
+    const t=e.target;
+    const aid=t.dataset.aid||t.dataset.aidDate;
+    const a=editing.draftActions.find(x=>x.id===aid);
+    if(!a) return;
+    if(t.dataset.aid) a.text=t.value;
+    else a.due=t.value;
+  };
   c.onclick=e=>{ const rm=e.target.closest('.ae-rm'); if(!rm) return; editing.draftActions=editing.draftActions.filter(x=>x.id!==rm.dataset.aid); renderMeetingEditorActions(); };
-  const addBtn=document.getElementById('addActionBtn'); if(addBtn) addBtn.onclick=()=>{ const na={id:uid(),text:'',done:false}; editing.draftActions.push(na); renderMeetingEditorActions(); setTimeout(()=>{ const el=c.querySelector(`[data-aid="${na.id}"]`); if(el){el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});} },50); };
+  const addBtn=document.getElementById('addActionBtn');
+  if(addBtn) addBtn.onclick=()=>{
+    const na={id:uid(),text:'',done:false,due:''};
+    editing.draftActions.push(na); renderMeetingEditorActions();
+    setTimeout(()=>{ const el=c.querySelector(`[data-aid="${na.id}"]`); if(el){el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});} },50);
+  };
 }
 
 function openMeetingEditor(mode,projectId,meetingId){
   if(!state.meetingProjects.length){ toast('Create a project first'); openAddProject(); return; }
   const item=meetingId?state.meetingItems.find(x=>x.id===meetingId):null;
   const initProject=projectId||(item&&item.projectId)||(ui.meetingProjectId)||state.meetingProjects[0].id;
-  editing={mode:'meeting-'+mode, projectId:initProject, meetingId, draftActions:item?item.actions.map(a=>({...a})):[{id:uid(),text:'',done:false}]};
+  editing={mode:'meeting-'+mode, projectId:initProject, meetingId, draftActions:item?item.actions.map(a=>({...a,due:a.due||''})):[{id:uid(),text:'',done:false,due:''}]};
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
   document.getElementById('modal').innerHTML=`
     <h2>${mode==='add'?'New meeting':'Edit meeting'}</h2>
@@ -1380,7 +1413,7 @@ function saveMeetingEditor(){
   const agenda=(document.getElementById('m_agenda')?.value||'').trim();
   const discussion=(document.getElementById('m_discussion')?.value||'').trim();
   const decisions=(document.getElementById('m_decisions')?.value||'').trim();
-  const actions=editing.draftActions.map(a=>({id:a.id,text:(a.text||'').trim(),done:!!a.done})).filter(a=>a.text);
+  const actions=editing.draftActions.map(a=>({id:a.id,text:(a.text||'').trim(),done:!!a.done,due:a.due||''})).filter(a=>a.text);
   const now=Date.now();
   if(editing.mode==='meeting-add'){
     state.meetingItems.unshift({id:uid(),projectId:editing.projectId,title,date,attendees,agenda,discussion,decisions,actions,created:now,updated:now});
