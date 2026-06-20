@@ -56,6 +56,10 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .featured .fsource{position:relative;font-size:12px;color:var(--muted);margin-top:2px;font-style:italic;}
 .featured .actions{position:relative;display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
 .featured.empty blockquote{color:var(--muted);font-style:italic;font-size:16px;}
+.feat-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.feat-head .eyebrow{margin-bottom:0;}
+.feat-dots{background:transparent;border:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;border-radius:8px;padding:4px;transition:.13s;}
+.feat-dots:hover{color:var(--ink);background:rgba(35,28,20,.06);}
 
 /* Quotes home row */
 .quotes-home-row{display:flex;align-items:center;gap:10px;background:var(--accent-tint);border:1px solid var(--accent-tint-2);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.15s;margin-bottom:16px;}
@@ -600,18 +604,27 @@ function renderFeatured(){
   ui.featuredId=q.id;
   el.className='featured';
   el.innerHTML=`<span class="mark">&ldquo;</span>
-    <div class="eyebrow">Quote of the moment</div>
+    <div class="feat-head">
+      <div class="eyebrow">Quote of the moment</div>
+      <button class="feat-dots" id="featDots" aria-label="Options">${I.dots}</button>
+    </div>
     <blockquote>${esc(q.text)}</blockquote>
     ${q.author?`<div class="by">${esc(q.author)}</div>`:''}
-    ${q.source?`<div class="fsource">${esc(q.source)}</div>`:''}
-    <div class="actions">
-      <button class="btn btn-primary" id="featCopy">${I.copy}Copy</button>
-      <button class="btn btn-ghost" id="featShare">${I.share}Share</button>
-      <button class="btn btn-ghost" id="featNew">${I.shuffle}New quote</button>
-    </div>`;
-  document.getElementById('featCopy').onclick=()=>copyText(quoteString(q));
-  document.getElementById('featShare').onclick=()=>shareText(quoteString(q));
-  document.getElementById('featNew').onclick=()=>{ ui.featuredId=null; renderFeatured(); };
+    ${q.source?`<div class="fsource">${esc(q.source)}</div>`:''}`;
+  document.getElementById('featDots').onclick=(e)=>{
+    e.stopPropagation();
+    const menu=document.getElementById('dotMenu'), back=document.getElementById('dmBackdrop');
+    menu.innerHTML=`
+      <div class="dm-title">${esc((q.text||'').slice(0,60))}</div>
+      <button id="fCopy">${I.copy} Copy</button>
+      <button id="fShare">${I.share} Share</button>
+      <div class="sep"></div>
+      <button id="fNew">${I.shuffle} New quote</button>`;
+    menu.classList.add('open'); back.classList.add('open'); back.onclick=closeDotMenu;
+    document.getElementById('fCopy').onclick=()=>{ closeDotMenu(); copyText(quoteString(q)); };
+    document.getElementById('fShare').onclick=()=>{ closeDotMenu(); shareText(quoteString(q)); };
+    document.getElementById('fNew').onclick=()=>{ closeDotMenu(); ui.featuredId=null; renderFeatured(); };
+  };
 }
 function quoteString(q){ return `"${q.text}"${q.author?' — '+q.author:''}${q.source?'\n'+q.source:''}`; }
 function quoteTagPool(){
