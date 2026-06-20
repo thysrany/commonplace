@@ -190,6 +190,19 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .ev-footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--line-soft);}
 .ev-date{font-size:12px;color:var(--muted);}
 
+/* Dot menu — bottom sheet */
+.dm-backdrop{position:fixed;inset:0;z-index:58;background:rgba(35,28,20,.35);display:none;}
+.dm-backdrop.open{display:block;}
+#dotMenu{position:fixed;bottom:0;left:0;right:0;z-index:59;background:var(--card);border-radius:18px 18px 0 0;box-shadow:0 -8px 32px rgba(60,42,24,.22);padding:0 0 32px;display:none;max-height:80vh;overflow-y:auto;}
+#dotMenu.open{display:block;animation:slideUp .22s ease;}
+#dotMenu::before{content:'';display:block;width:40px;height:4px;background:var(--line);border-radius:2px;margin:14px auto 12px;}
+#dotMenu .dm-title{padding:4px 18px 12px;font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink-soft);border-bottom:1px solid var(--line-soft);margin-bottom:6px;}
+#dotMenu button{display:flex;width:100%;align-items:center;gap:14px;background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:15px;color:var(--ink);padding:14px 18px;text-align:left;}
+#dotMenu button svg{width:18px;height:18px;color:var(--muted);flex:0 0 auto;}
+#dotMenu button:hover{background:var(--paper-2);}
+#dotMenu .sep{height:1px;background:var(--line-soft);margin:4px 18px;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+
 /* Search results */
 .results-label{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;margin-bottom:12px;}
 
@@ -307,6 +320,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 </button>
 
 <!-- Dot menu -->
+<div class="dm-backdrop" id="dmBackdrop"></div>
 <div id="dotMenu"></div>
 
 <!-- Modal overlay -->
@@ -778,31 +792,33 @@ function renderApp(){
   updateBanner();
 }
 
-/* ---------- Dot menu ---------- */
+/* ---------- Dot menu — bottom sheet ---------- */
 function openDotMenu(btn,entryId){
   const e=state.entries.find(x=>x.id===entryId); if(!e) return;
   const menu=document.getElementById('dotMenu');
+  const back=document.getElementById('dmBackdrop');
+  const headline=e.title||(e.note||'').slice(0,50)||(e.sections&&e.sections[0]?e.sections[0].title||e.sections[0].text:'')||'Entry';
   menu.innerHTML=`
+    <div class="dm-title">${esc(headline.slice(0,60))}</div>
     <button data-dm="edit">${I.edit} Edit</button>
     <button data-dm="copy">${I.copy} Copy</button>
     <button data-dm="share">${I.share} Share</button>
     <div class="sep"></div>
     <button data-dm="tags">${I.tag} Edit tags</button>
     <button data-dm="move">${I.folder} Move to folder</button>`;
-  const r=btn.getBoundingClientRect(),mw=180,vh=window.innerHeight,vw=window.innerWidth;
-  let top=r.bottom+6,left=r.right-mw;
-  if(top+210>vh) top=r.top-216;
-  if(left<8) left=8; if(left+mw>vw-8) left=vw-mw-8;
-  menu.style.cssText=`top:${top}px;left:${left}px;`;
   menu.classList.add('open');
+  back.classList.add('open');
+  back.onclick=closeDotMenu;
   menu.querySelector('[data-dm="edit"]').onclick=()=>{ closeDotMenu(); openEditor('edit',e.folderId,entryId); };
   menu.querySelector('[data-dm="copy"]').onclick=()=>{ closeDotMenu(); copyText(entryString(e)); };
   menu.querySelector('[data-dm="share"]').onclick=()=>{ closeDotMenu(); shareText(entryString(e)); };
   menu.querySelector('[data-dm="tags"]').onclick=()=>{ closeDotMenu(); openRetag(entryId); };
   menu.querySelector('[data-dm="move"]').onclick=()=>{ closeDotMenu(); openMoveToFolder(entryId); };
-  setTimeout(()=>document.addEventListener('click',closeDotMenu,{once:true}),10);
 }
-function closeDotMenu(){ document.getElementById('dotMenu').classList.remove('open'); }
+function closeDotMenu(){
+  document.getElementById('dotMenu').classList.remove('open');
+  document.getElementById('dmBackdrop').classList.remove('open');
+}
 
 /* ---------- Move to folder ---------- */
 function openMoveToFolder(entryId){
