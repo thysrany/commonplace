@@ -46,17 +46,38 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .menu .who b{display:block;color:var(--ink);font-size:13px;font-weight:600;margin-bottom:1px;}
 .menu .sep{height:1px;background:var(--line-soft);margin:4px;}
 
-/* Featured */
-.featured{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 26px 20px;margin-bottom:26px;box-shadow:var(--shadow);overflow:hidden;animation:rise .5s ease both;}
-.featured .mark{position:absolute;font-family:var(--serif);font-weight:600;color:var(--accent);opacity:.09;font-size:180px;line-height:1;top:-28px;left:12px;pointer-events:none;user-select:none;}
-.featured .eyebrow{position:relative;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:12px;}
-.featured blockquote{position:relative;font-family:var(--serif);font-optical-sizing:auto;font-weight:400;font-size:clamp(19px,3vw,27px);line-height:1.35;color:var(--ink);}
-.featured .by{position:relative;margin-top:12px;font-size:13.5px;color:var(--ink-soft);font-weight:500;}
+/* Featured quote */
+.featured{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px 18px;margin-bottom:18px;box-shadow:var(--shadow);overflow:hidden;}
+.featured .mark{position:absolute;font-family:var(--serif);font-weight:600;color:var(--accent);opacity:.09;font-size:160px;line-height:1;top:-24px;left:10px;pointer-events:none;user-select:none;}
+.featured .eyebrow{position:relative;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:10px;}
+.featured blockquote{position:relative;font-family:var(--serif);font-optical-sizing:auto;font-weight:400;font-size:clamp(17px,2.8vw,24px);line-height:1.38;color:var(--ink);}
+.featured .by{position:relative;margin-top:10px;font-size:13px;color:var(--ink-soft);font-weight:500;}
 .featured .by::before{content:"— ";color:var(--accent);}
-.featured .fsource{position:relative;font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;}
-.featured .ftags{position:relative;display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;}
-.featured .actions{position:relative;display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;}
-.featured.empty blockquote{color:var(--muted);font-style:italic;font-size:18px;}
+.featured .fsource{position:relative;font-size:12px;color:var(--muted);margin-top:2px;font-style:italic;}
+.featured .actions{position:relative;display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.featured.empty blockquote{color:var(--muted);font-style:italic;font-size:16px;}
+
+/* Quotes home row */
+.quotes-home-row{display:flex;align-items:center;gap:10px;background:var(--accent-tint);border:1px solid var(--accent-tint-2);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.15s;margin-bottom:16px;}
+.quotes-home-row:hover{background:var(--accent-tint-2);}
+.quotes-home-icon{display:grid;place-items:center;color:var(--accent);}
+.quotes-home-icon svg{width:18px;height:18px;}
+.quotes-home-name{flex:1;font-family:var(--serif);font-size:17px;font-weight:600;color:var(--accent-2);}
+.quotes-home-count{font-size:12px;font-weight:700;color:var(--accent-2);background:var(--accent-tint-2);border:1px solid var(--accent-tint-2);padding:2px 9px;border-radius:10px;}
+
+/* Quote cards */
+.quote-list{display:flex;flex-direction:column;gap:10px;}
+.quote-card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 16px 12px;position:relative;}
+.qc-text{font-family:var(--serif);font-size:17px;line-height:1.55;color:var(--ink);display:block;margin-bottom:10px;}
+.qc-by{font-size:13px;color:var(--muted);font-weight:500;}
+.qc-by::before{content:"— ";color:var(--accent);}
+.qc-source{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px;}
+.qc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.qc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--line-soft);}
+
+/* Quotes view */
+.quotes-toolbar{display:flex;gap:10px;margin-bottom:12px;}
+.quotes-toolbar .search{flex:1;}
 
 /* Buttons */
 .btn{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;transition:.15s;border:1px solid transparent;}
@@ -282,7 +303,6 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 @keyframes pop{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
 
 @media(max-width:520px){
-  .featured{padding:22px 18px 16px;}
   .modal{padding:18px;}
   .modal-foot{flex-direction:column-reverse;align-items:stretch;}
   .modal-foot .right{justify-content:flex-end;}
@@ -379,64 +399,85 @@ function writeStore(){ writeLocal(); if(typeof cloudSaveDebounced==='function') 
 /* ---------- Seed ---------- */
 function seed(){
   const now=Date.now();
-  const f1={id:uid(),name:'Quotes',created:now};
-  const f2={id:uid(),name:'Notes',created:now};
+  const f1={id:uid(),name:'Notes',created:now};
   return {
-    folders:[f1,f2],
+    folders:[f1],
     entries:[
-      {id:uid(),folderId:f1.id,title:'',author:'Marcus Aurelius',source:'Meditations',tags:['quotes','Stoicism'],note:'You have power over your mind — not outside events. Realize this, and you will find strength.',created:now-500000,updated:now-500000},
-      {id:uid(),folderId:f1.id,title:'',author:'Seneca',source:'Letters from a Stoic',tags:['quotes','Stoicism'],note:'We suffer more often in imagination than in reality.',created:now-300000,updated:now-300000},
-      {id:uid(),folderId:f2.id,title:'Getting started',author:'',source:'',tags:['tips'],note:'Create folders to organize your entries.\n\nTag any entry with "quotes" to include it in the Quote of the Moment on the home screen.\n\nUse the global search to find anything across all folders.',created:now,updated:now}
+      {id:uid(),folderId:f1.id,title:'Getting started',author:'',source:'',tags:['tips'],noteType:'plain',note:'Create folders to organize your notes.\n\nUse the Quotes section (home screen) to build your quote collection.\n\nUse the global search to find anything across all folders.',sections:[],created:now,updated:now}
+    ],
+    quotes:[
+      {id:uid(),text:'You have power over your mind — not outside events. Realize this, and you will find strength.',author:'Marcus Aurelius',source:'Meditations',tags:['Stoicism','Mindset'],created:now-500000},
+      {id:uid(),text:'We suffer more often in imagination than in reality.',author:'Seneca',source:'Letters from a Stoic',tags:['Stoicism','Perspective'],created:now-300000},
+      {id:uid(),text:'It is not that we have a short time to live, but that we waste a lot of it.',author:'Seneca',source:'On the Shortness of Life',tags:['Stoicism','Time'],created:now-100000}
     ]
   };
 }
 
 /* ---------- Migrate old format ---------- */
 function migrateOldFormat(){
-  if(!state.quotes&&!state.notes&&!state.books) return;
   const now=Date.now();
   const TYPE_LABEL={physical:'Physical',kindle:'Kindle',audible:'Audible',audios:'Audio',youtube:'YouTube',tiktok:'TikTok',facebook:'Facebook',instagram:'Instagram',twitter:'Twitter',threads:'Threads'};
-  const newFolders=[], newEntries=[];
-  if(Array.isArray(state.quotes)&&state.quotes.length){
-    const f={id:uid(),name:'Quotes',created:now}; newFolders.push(f);
-    state.quotes.forEach(q=>newEntries.push({id:q.id||uid(),folderId:f.id,title:'',author:q.author||'',source:'',tags:q.tags||[],note:q.text||'',created:q.created||now,updated:q.created||now}));
+
+  // Old v22 format: has state.notes or state.books (tabbed app)
+  if(state.notes||state.books){
+    const newFolders=[], newEntries=[];
+    if(Array.isArray(state.notes)&&state.notes.length){
+      const f={id:uid(),name:'Notes',created:now}; newFolders.push(f);
+      state.notes.forEach(n=>newEntries.push({id:n.id||uid(),folderId:f.id,title:n.title||'',author:'',source:'',tags:n.tags||[],noteType:'plain',note:n.text||'',sections:[],created:n.created||now,updated:n.created||now}));
+    }
+    if(Array.isArray(state.books)&&state.books.length){
+      const f={id:uid(),name:'Sources',created:now}; newFolders.push(f);
+      state.books.forEach(b=>{
+        const parts=[b.title,b.author?'by '+b.author:'',b.type&&TYPE_LABEL[b.type]?'('+TYPE_LABEL[b.type]+')':'',b.link||''].filter(Boolean);
+        const srcText=parts.join(' · ');
+        const inner=Array.isArray(b.notes)?b.notes:[];
+        if(inner.length){ inner.forEach(n=>newEntries.push({id:n.id||uid(),folderId:f.id,title:n.title||'',author:b.author||'',source:srcText,tags:b.tags||[],noteType:'plain',note:n.text||'',sections:[],created:b.created||now,updated:b.created||now})); }
+        else{ newEntries.push({id:b.id||uid(),folderId:f.id,title:b.title||'',author:b.author||'',source:srcText,tags:b.tags||[],noteType:'plain',note:'',sections:[],created:b.created||now,updated:b.created||now}); }
+      });
+    }
+    state.folders=[...(state.folders||[]),...newFolders];
+    state.entries=[...(state.entries||[]),...newEntries];
+    // Old v22 quotes → move to state.quotes (not folders)
+    if(Array.isArray(state.quotes)&&state.quotes.length){
+      state.quotes=state.quotes.map(q=>({id:q.id||uid(),text:q.text||'',author:q.author||'',source:q.source||'',tags:q.tags||[],created:q.created||now}));
+    }
+    delete state.notes; delete state.books;
+    writeLocal(); return;
   }
-  if(Array.isArray(state.notes)&&state.notes.length){
-    const f={id:uid(),name:'Notes',created:now}; newFolders.push(f);
-    state.notes.forEach(n=>newEntries.push({id:n.id||uid(),folderId:f.id,title:n.title||'',author:'',source:'',tags:n.tags||[],note:n.text||'',created:n.created||now,updated:n.created||now}));
+
+  // v23-v31 format: quotes were moved into a "Quotes" folder — move them back
+  if(!Array.isArray(state.quotes)||state.quotes.length===0){
+    const qf=(state.folders||[]).find(f=>f.name==='Quotes');
+    if(qf){
+      state.quotes=(state.entries||[]).filter(e=>e.folderId===qf.id).map(e=>({id:e.id||uid(),text:e.note||e.title||'',author:e.author||'',source:e.source||'',tags:e.tags||[],created:e.created||now}));
+      state.entries=(state.entries||[]).filter(e=>e.folderId!==qf.id);
+      state.folders=(state.folders||[]).filter(f=>f.id!==qf.id);
+      writeLocal();
+    }
   }
-  if(Array.isArray(state.books)&&state.books.length){
-    const f={id:uid(),name:'Sources',created:now}; newFolders.push(f);
-    state.books.forEach(b=>{
-      const parts=[b.title,b.author?'by '+b.author:'',b.type&&TYPE_LABEL[b.type]?'('+TYPE_LABEL[b.type]+')':'',b.link||''].filter(Boolean);
-      const srcText=parts.join(' · ');
-      const inner=Array.isArray(b.notes)?b.notes:[];
-      if(inner.length){
-        inner.forEach(n=>newEntries.push({id:n.id||uid(),folderId:f.id,title:n.title||'',author:b.author||'',source:srcText,tags:b.tags||[],note:n.text||'',created:b.created||now,updated:b.created||now}));
-      }else{
-        newEntries.push({id:b.id||uid(),folderId:f.id,title:b.title||'',author:b.author||'',source:srcText,tags:b.tags||[],note:'',created:b.created||now,updated:b.created||now});
-      }
-    });
-  }
-  state.folders=[...(state.folders||[]),...newFolders];
-  state.entries=[...(state.entries||[]),...newEntries];
-  delete state.quotes; delete state.notes; delete state.books;
-  writeLocal();
+
+  // Ensure source field on all quotes
+  (state.quotes||[]).forEach(q=>{ if(!q.source) q.source=''; });
 }
 function normalizeState(){
   if(!Array.isArray(state.folders)) state.folders=[];
   if(!Array.isArray(state.entries)) state.entries=[];
+  if(!Array.isArray(state.quotes)) state.quotes=[];
   state.entries.forEach(e=>{
     if(!e.noteType) e.noteType='plain';
     if(!Array.isArray(e.sections)) e.sections=[];
   });
+  state.quotes.forEach(q=>{ if(!q.source) q.source=''; });
 }
 
 /* ---------- State ---------- */
 let state=readStore();
 if(!state){ state=seed(); writeLocal(); }
 normalizeState(); migrateOldFormat();
-const ui={view:'home',folderId:null,entryId:null,entryFrom:'home',folderFilter:null,folderSearch:'',globalSearch:'',featuredId:null};
+const ui={view:'home',folderId:null,entryId:null,entryFrom:'home',
+  folderFilter:null,folderSearch:'',
+  quotesSearch:'',quotesFilter:null,
+  featuredId:null,globalSearch:''};
 
 /* ---------- Helpers ---------- */
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -545,6 +586,204 @@ function wireList(listEl){
   };
 }
 
+/* ---------- Featured quote ---------- */
+function renderFeatured(){
+  const el=document.getElementById('featured'); if(!el) return;
+  if(!state.quotes.length){
+    el.className='featured empty';
+    el.innerHTML=`<span class="mark">&ldquo;</span><div class="eyebrow">Quote of the moment</div><blockquote>Add quotes to see one featured here.</blockquote>`;
+    return;
+  }
+  let q;
+  const pool=state.quotes;
+  do{ q=pool[Math.floor(Math.random()*pool.length)]; }while(pool.length>1&&q.id===ui.featuredId);
+  ui.featuredId=q.id;
+  el.className='featured';
+  el.innerHTML=`<span class="mark">&ldquo;</span>
+    <div class="eyebrow">Quote of the moment</div>
+    <blockquote>${esc(q.text)}</blockquote>
+    ${q.author?`<div class="by">${esc(q.author)}</div>`:''}
+    ${q.source?`<div class="fsource">${esc(q.source)}</div>`:''}
+    <div class="actions">
+      <button class="btn btn-primary" id="featCopy">${I.copy}Copy</button>
+      <button class="btn btn-ghost" id="featShare">${I.share}Share</button>
+      <button class="btn btn-ghost" id="featNew">${I.shuffle}New quote</button>
+    </div>`;
+  document.getElementById('featCopy').onclick=()=>copyText(quoteString(q));
+  document.getElementById('featShare').onclick=()=>shareText(quoteString(q));
+  document.getElementById('featNew').onclick=()=>{ ui.featuredId=null; renderFeatured(); };
+}
+function quoteString(q){ return `"${q.text}"${q.author?' — '+q.author:''}${q.source?'\n'+q.source:''}`; }
+function quoteTagPool(){
+  const map=new Map();
+  state.quotes.forEach(q=>(q.tags||[]).forEach(t=>{const k=t.toLowerCase();if(!map.has(k))map.set(k,t);}));
+  return [...map.values()].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+}
+
+/* ---------- Quotes navigation & rendering ---------- */
+function navigateToQuotes(){ ui.view='quotes'; ui.quotesSearch=''; ui.quotesFilter=null; renderApp(); }
+
+function quoteCard(q){
+  const tags=(q.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  return `<article class="quote-card" data-qid="${q.id}">
+    <blockquote class="qc-text">${esc(q.text)}</blockquote>
+    ${q.author?`<div class="qc-by">${esc(q.author)}</div>`:''}
+    ${q.source?`<div class="qc-source">${esc(q.source)}</div>`:''}
+    ${tags?`<div class="qc-tags">${tags}</div>`:''}
+    <div class="qc-foot">
+      <span class="edate">${fmtDate(q.created)}</span>
+      <button class="dots-btn" data-qid="${q.id}" aria-label="Options">${I.dots}</button>
+    </div>
+  </article>`;
+}
+
+function renderQuoteTagBar(){
+  const bar=document.getElementById('qtTagbar'); if(!bar) return;
+  const pool=quoteTagPool();
+  if(!pool.length){ bar.innerHTML=''; return; }
+  const active=ui.quotesFilter;
+  let html=`<span class="lbl">Tags</span>`;
+  html+=`<button class="chip ${active===null?'active':''}" data-tag="">All</button>`;
+  html+=pool.map(t=>`<button class="chip ${active&&active.toLowerCase()===t.toLowerCase()?'active':''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('');
+  bar.innerHTML=html;
+  bar.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ ui.quotesFilter=c.dataset.tag||null; renderQuoteContent(); });
+}
+
+function renderQuoteContent(){
+  renderQuoteTagBar();
+  const el=document.getElementById('quoteList'); if(!el) return;
+  const q=ui.quotesSearch.trim().toLowerCase();
+  const f=ui.quotesFilter;
+  let items=[...state.quotes].sort((a,b)=>b.created-a.created);
+  if(q) items=items.filter(x=>[x.text,x.author,x.source,...(x.tags||[])].filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(f) items=items.filter(x=>(x.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase()));
+  if(!items.length){
+    el.innerHTML=`<div class="empty-state"><div class="big">${state.quotes.length?'Nothing matches.':'No quotes yet.'}</div><p>${state.quotes.length?'Try different words.':'Tap + to add your first quote.'}</p></div>`;
+  }else{
+    el.innerHTML=items.map(q=>quoteCard(q)).join('');
+  }
+  el.onclick=(e)=>{
+    const db=e.target.closest('.dots-btn');
+    if(db){ e.preventDefault(); e.stopPropagation(); openQuoteDotMenu(db.dataset.qid); }
+  };
+}
+
+function renderQuotes(){
+  const content=document.getElementById('appContent');
+  content.innerHTML=`<div class="quotes-toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="qtSearch" placeholder="Search quotes…" value="${esc(ui.quotesSearch)}">
+      ${ui.quotesSearch?`<button class="clear-btn" id="qtClear">✕</button>`:''}
+    </div>
+  </div>
+  <div class="tagbar" id="qtTagbar"></div>
+  <div class="quote-list" id="quoteList"></div>`;
+  renderQuoteContent();
+  const si=document.getElementById('qtSearch');
+  si.addEventListener('input',()=>{ ui.quotesSearch=si.value; renderQuoteContent(); });
+  const clr=document.getElementById('qtClear');
+  if(clr) clr.onclick=()=>{ ui.quotesSearch=''; renderQuotes(); };
+}
+
+/* ---------- Quote dot menu ---------- */
+function openQuoteDotMenu(quoteId){
+  const q=state.quotes.find(x=>x.id===quoteId); if(!q) return;
+  const menu=document.getElementById('dotMenu'), back=document.getElementById('dmBackdrop');
+  menu.innerHTML=`
+    <div class="dm-title">${esc((q.text||'').slice(0,60))}</div>
+    <button data-qdm="edit">${I.edit} Edit</button>
+    <button data-qdm="copy">${I.copy} Copy</button>
+    <button data-qdm="share">${I.share} Share</button>
+    <div class="sep"></div>
+    <button data-qdm="tags">${I.tag} Edit tags</button>`;
+  menu.classList.add('open'); back.classList.add('open'); back.onclick=closeDotMenu;
+  menu.querySelector('[data-qdm="edit"]').onclick=()=>{ closeDotMenu(); openQuoteEditor('edit',quoteId); };
+  menu.querySelector('[data-qdm="copy"]').onclick=()=>{ closeDotMenu(); copyText(quoteString(q)); };
+  menu.querySelector('[data-qdm="share"]').onclick=()=>{ closeDotMenu(); shareText(quoteString(q)); };
+  menu.querySelector('[data-qdm="tags"]').onclick=()=>{ closeDotMenu(); openQuoteRetag(quoteId); };
+}
+
+/* ---------- Quote editor ---------- */
+function openQuoteEditor(mode,quoteId){
+  const item=quoteId?state.quotes.find(x=>x.id===quoteId):null;
+  editing={mode:'quote-'+mode, quoteId, draftTags:item?[...(item.tags||[])]:[]};
+  const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
+  document.getElementById('modal').innerHTML=`
+    <h2>${mode==='add'?'New quote':'Edit quote'}</h2>
+    <div class="field"><label>Quote</label><textarea id="q_text" placeholder="The words you want to keep…">${item?esc(item.text||''):''}</textarea></div>
+    <div class="field"><label>Author ${opt}</label><input type="text" id="q_author" placeholder="Who said it?" value="${item?esc(item.author||''):''}"></div>
+    <div class="field"><label>Source ${opt}</label><input type="text" id="q_source" placeholder="Book, article, speech…" value="${item?esc(item.source||''):''}"></div>
+    <div class="field"><label>Tags</label>
+      <div class="tag-editor">
+        <div class="ac-wrap"><input type="text" id="tagInput" placeholder="Type a tag…" autocomplete="off"><div class="ac-drop" id="tagDropdown"></div></div>
+        <div class="selected-tags" id="selTags"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div id="footLeft">${mode==='edit'?`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`:'<span></span>'}</div>
+      <div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">${mode==='add'?'Add quote':'Save'}</button></div>
+    </div>`;
+  renderDraftTags(); setupTagAutocomplete();
+  document.getElementById('cancelBtn').onclick=closeModal;
+  document.getElementById('saveBtn').onclick=saveQuoteEditor;
+  if(mode==='edit') wireQuoteDelete(quoteId);
+  showModal();
+  setTimeout(()=>document.getElementById('q_text').focus(),60);
+}
+
+function saveQuoteEditor(){
+  const text=(document.getElementById('q_text')?.value||'').trim();
+  if(!text){ toast('Please add the quote text'); document.getElementById('q_text').focus(); return; }
+  const author=(document.getElementById('q_author')?.value||'').trim();
+  const source=(document.getElementById('q_source')?.value||'').trim();
+  const tags=editing.draftTags.slice();
+  const now=Date.now();
+  if(editing.mode==='quote-add'){
+    state.quotes.unshift({id:uid(),text,author,source,tags,created:now});
+    toast('Quote added',true);
+  }else{
+    const q=state.quotes.find(x=>x.id===editing.quoteId);
+    if(q) Object.assign(q,{text,author,source,tags});
+    toast('Quote saved',true);
+  }
+  writeStore(); closeModal(); if(ui.view==='quotes') renderQuoteContent(); else renderHomeContent();
+}
+
+function wireQuoteDelete(quoteId){
+  document.getElementById('delBtn').onclick=()=>{
+    const left=document.getElementById('footLeft');
+    left.innerHTML=`<div class="confirm-row"><span class="q">Delete permanently?</span>
+      <button class="btn btn-ghost" id="dCancel" style="padding:7px 12px">Keep</button>
+      <button class="btn btn-danger" id="dYes" style="padding:7px 12px">${I.trash} Delete</button></div>`;
+    document.getElementById('dCancel').onclick=()=>{ left.innerHTML=`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`; wireQuoteDelete(quoteId); };
+    document.getElementById('dYes').onclick=()=>{
+      state.quotes=state.quotes.filter(x=>x.id!==quoteId);
+      if(ui.featuredId===quoteId) ui.featuredId=null;
+      writeStore(); closeModal(); renderApp(); toast('Deleted',true);
+    };
+  };
+}
+
+function openQuoteRetag(quoteId){
+  const q=state.quotes.find(x=>x.id===quoteId); if(!q) return;
+  editing={mode:'quote-retag',quoteId,draftTags:[...(q.tags||[])]};
+  document.getElementById('modal').innerHTML=`
+    <h2>Edit tags</h2>
+    <div class="sub">${esc((q.text||'').slice(0,60))}</div>
+    <div class="field"><label>Tags</label>
+      <div class="tag-editor">
+        <div class="ac-wrap"><input type="text" id="tagInput" placeholder="Type a tag…" autocomplete="off"><div class="ac-drop" id="tagDropdown"></div></div>
+        <div class="selected-tags" id="selTags"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><span></span><div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Save tags</button></div></div>`;
+  renderDraftTags(); setupTagAutocomplete();
+  document.getElementById('cancelBtn').onclick=closeModal;
+  document.getElementById('saveBtn').onclick=()=>{ q.tags=editing.draftTags.slice(); writeStore(); closeModal(); if(ui.view==='quotes') renderQuoteContent(); toast('Tags updated',true); };
+  showModal(); setTimeout(()=>document.getElementById('tagInput').focus(),60);
+}
+
 /* ---------- Copy / share ---------- */
 async function copyText(txt){
   try{ await navigator.clipboard.writeText(txt); toast('Copied',true); }
@@ -555,68 +794,6 @@ async function shareText(txt){
   else{copyText(txt);toast('Copied — paste to share',true);}
 }
 
-/* ---------- Featured quote ---------- */
-function quoteEntries(){ return state.entries.filter(e=>(e.tags||[]).some(t=>t.toLowerCase()==='quotes')); }
-function renderFeatured(reshuffle){
-  const el=document.getElementById('featured'); if(!el) return;
-  const pool=quoteEntries();
-  if(!pool.length){
-    el.className='featured empty';
-    el.innerHTML=`<span class="mark">&ldquo;</span><div class="eyebrow">Quote of the moment</div><blockquote>Tag any entry with "quotes" to see it featured here.</blockquote>`;
-    return;
-  }
-  let q;
-  if(reshuffle||!ui.featuredId){ do{ q=pool[Math.floor(Math.random()*pool.length)]; }while(pool.length>1&&q.id===ui.featuredId); }
-  else{ q=pool.find(x=>x.id===ui.featuredId)||pool[0]; }
-  ui.featuredId=q.id;
-  el.className='featured';
-  el.innerHTML=`<span class="mark">&ldquo;</span>
-    <div class="eyebrow">Quote of the moment</div>
-    <blockquote>${esc(q.note||q.title)}</blockquote>
-    ${q.author?`<div class="by">${esc(q.author)}</div>`:''}
-    ${q.source?`<div class="fsource">${esc(q.source)}</div>`:''}
-    ${(q.tags&&q.tags.length)?`<div class="ftags">${q.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
-    <div class="actions">
-      <button class="btn btn-primary" id="featCopy">${I.copy}Copy</button>
-      <button class="btn btn-ghost" id="featShare">${I.share}Share</button>
-      <button class="btn btn-ghost" id="featShuffle">${I.shuffle}New quote</button>
-    </div>`;
-  document.getElementById('featCopy').onclick=()=>copyText(entryString(q));
-  document.getElementById('featShare').onclick=()=>shareText(entryString(q));
-  document.getElementById('featShuffle').onclick=()=>renderFeatured(true);
-}
-
-/* ---------- Entry card ---------- */
-function entryCard(e,showFolder){
-  const tags=e.tags||[];
-  const tagSmall=tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('');
-  const fullTags=tags.map(t=>tagPill(t,e.id)).join('');
-  const headline=e.title||e.note||'Untitled';
-  const metaParts=[];
-  if(e.author) metaParts.push(`<span class="ep-author">${esc(e.author)}</span>`);
-  if(e.source) metaParts.push(`<span class="ep-source">${esc(e.source)}</span>`);
-  if(showFolder) metaParts.push(`<span class="ep-folder">${esc(folderName(e.folderId))}</span>`);
-  if(tagSmall) metaParts.push(tagSmall);
-  const metaHtml=metaParts.join('<span class="metadot"> · </span>');
-  return `<details class="entrycard">
-    <summary class="entry-sum">
-      <span class="entry-preview">
-        <span class="ep-main">${esc(headline)}</span>
-        ${metaHtml?`<span class="ep-meta">${metaHtml}</span>`:''}
-      </span>
-      <span class="e-chev">${I.chevron}</span>
-      <button class="dots-btn" data-id="${e.id}" aria-label="Options">${I.dots}</button>
-    </summary>
-    <div class="entry-body">
-      ${e.title&&e.note?`<div class="etitle">${esc(e.title)}</div>`:''}
-      ${e.note?`<div class="enote">${esc(e.note)}</div>`:''}
-      ${e.author?`<div class="eby">${esc(e.author)}</div>`:''}
-      ${e.source?`<div class="esource">${esc(e.source)}</div>`:''}
-      ${fullTags?`<div class="ctags">${fullTags}</div>`:''}
-      <div class="edate">${fmtDate(e.created)}</div>
-    </div>
-  </details>`;
-}
 
 /* ---------- Wire entry list events ---------- */
 /* ---------- Tag filter bar (folder view) ---------- */
@@ -669,13 +846,18 @@ function renderHomeContent(){
       <div class="list" id="list">${results.length?results.map(e=>entryRow(e,true)).join(''):`<div class="empty-state"><div class="big">Nothing found.</div><p>Try different words.</p></div>`}</div>`;
     wireList(document.getElementById('list'),true);
   }else{
-    el.innerHTML=`<section class="featured" id="featured"></section>
+    el.innerHTML=`<div class="quotes-home-row" id="quotesHomeRow">
+        <span class="quotes-home-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></span>
+        <span class="quotes-home-name">Quotes</span>
+        <span class="quotes-home-count">${state.quotes.length}</span>
+        <span style="color:var(--accent)">${I.chevron}</span>
+      </div>
       <div class="folder-section-head">
         <span class="folder-section-title">Folders</span>
         <button class="add-folder-btn" id="addFolderBtn">+ New folder</button>
       </div>
       <div class="folder-list" id="folderList"></div>`;
-    renderFeatured(false);
+    document.getElementById('quotesHomeRow').onclick=navigateToQuotes;
     renderFolderList();
     document.getElementById('addFolderBtn').onclick=openAddFolder;
   }
@@ -683,12 +865,14 @@ function renderHomeContent(){
 
 function renderHome(){
   const content=document.getElementById('appContent');
-  content.innerHTML=`<div class="search" style="margin-bottom:18px">
+  content.innerHTML=`<section class="featured" id="featured"></section>
+  <div class="search" style="margin-bottom:14px">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     <input type="text" id="globalSearchInput" placeholder="Search all folders…" value="${esc(ui.globalSearch)}">
     ${ui.globalSearch?`<button class="clear-btn" id="gsClear">✕</button>`:''}
   </div>
   <div id="homeMain"></div>`;
+  renderFeatured();
   renderHomeContent();
   const gsi=document.getElementById('globalSearchInput');
   gsi.addEventListener('input',()=>{ ui.globalSearch=gsi.value; renderHomeContent(); });
@@ -763,23 +947,28 @@ function updateHeader(){
   const ba=document.getElementById('brandArea');
   if(ui.view==='home'){
     ba.innerHTML=`<div class="brand"><h1>Common<span class="amp">place</span></h1><p>Your personal collection</p></div>`;
+  }else if(ui.view==='quotes'){
+    ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}Quotes</button>`;
   }else if(ui.view==='folder'){
     const folder=state.folders.find(x=>x.id===ui.folderId);
     ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}${esc(folder?folder.name:'Folder')}</button>`;
   }else if(ui.view==='entry'){
-    const lbl=ui.entryFrom==='folder'?folderName(ui.folderId):'Search';
+    const lbl=ui.entryFrom==='folder'?folderName(ui.folderId):ui.entryFrom==='quotes'?'Quotes':'Search';
     ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}${esc(lbl)}</button>`;
   }
   document.getElementById('backBtn')?.addEventListener('click',navigateBack);
-  document.getElementById('fab').style.display=state.folders.length?'grid':'none';
+  const fab=document.getElementById('fab');
+  fab.style.display=(ui.view==='folder'||ui.view==='quotes')?'grid':'none';
 }
 
 /* ---------- Navigation ---------- */
 function navigateHome(){ ui.view='home';ui.folderId=null;ui.entryId=null;ui.folderFilter=null;ui.folderSearch=''; renderApp(); }
 function navigateToFolder(id){ ui.view='folder';ui.folderId=id;ui.entryId=null;ui.folderFilter=null;ui.folderSearch=''; renderApp(); }
+function navigateToQuotes(){ ui.view='quotes';ui.quotesSearch='';ui.quotesFilter=null; renderApp(); }
 function navigateToEntry(entryId){ ui.entryFrom=ui.view; ui.view='entry'; ui.entryId=entryId; renderApp(); }
 function navigateBack(){
   if(ui.view==='entry'){ ui.view=ui.entryFrom||'home'; ui.entryId=null; renderApp(); }
+  else if(ui.view==='quotes'||ui.view==='folder') navigateHome();
   else navigateHome();
 }
 
@@ -789,6 +978,7 @@ function renderApp(){
   if(ui.view==='home') renderHome();
   else if(ui.view==='folder') renderFolder();
   else if(ui.view==='entry') renderEntry();
+  else if(ui.view==='quotes') renderQuotes();
   updateBanner();
 }
 
@@ -1038,7 +1228,6 @@ function wireDelete(){
     document.getElementById('dCancel').onclick=()=>{ left.innerHTML=`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`; wireDelete(); };
     document.getElementById('dYes').onclick=()=>{
       state.entries=state.entries.filter(x=>x.id!==editing.entryId);
-      if(ui.featuredId===editing.entryId) ui.featuredId=null;
       writeStore(); closeModal(); navigateBack(); toast('Deleted',true);
     };
   };
@@ -1145,7 +1334,7 @@ function importData(file){
       if(!data||(!Array.isArray(data.folders)&&!Array.isArray(data.quotes))) throw 0;
       if(!confirm('Import will replace your current data. Continue?')) return;
       state=data; normalizeState(); migrateOldFormat(); writeStore();
-      ui.view='home'; ui.folderId=null; renderApp(); toast('Backup imported',true);
+      ui.view='home'; ui.folderId=null; ui.featuredId=null; renderApp(); toast('Backup imported',true);
     }catch(e){ toast('Invalid backup file'); }
   };
   r.readAsText(file);
@@ -1212,7 +1401,7 @@ function cloudPull(pushIfEmpty){
     .then(r=>r.ok?r.json():null)
     .then(doc=>{
       const raw=doc&&doc.fields&&doc.fields[FB.FIELD]&&doc.fields[FB.FIELD].stringValue;
-      if(raw){ try{ state=JSON.parse(raw); normalizeState(); migrateOldFormat(); writeLocal(); ui.featuredId=null; renderApp(); updateBanner(); toast('Loaded from your account',true); }catch(e){ if(pushIfEmpty) cloudPush(); } }
+      if(raw){ try{ state=JSON.parse(raw); normalizeState(); migrateOldFormat(); writeLocal(); renderApp(); updateBanner(); toast('Loaded from your account',true); }catch(e){ if(pushIfEmpty) cloudPush(); } }
       else if(pushIfEmpty){ cloudPush(); }
     }).catch(()=>{});
 }
@@ -1250,7 +1439,7 @@ menu.addEventListener('click',e=>e.stopPropagation());
 document.getElementById('exportBtn').onclick=()=>{ closeMenu(); exportData(); };
 document.getElementById('importBtn').onclick=()=>{ closeMenu(); $id('fileInput').click(); };
 $id('fileInput').addEventListener('change',e=>{ if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
-$id('fab').onclick=()=>openEditor('add', ui.view==='folder'?ui.folderId:null);
+$id('fab').onclick=()=>{ if(ui.view==='quotes') openQuoteEditor('add'); else openEditor('add', ui.view==='folder'?ui.folderId:null); };
 $id('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$id('overlay').classList.contains('open')) closeModal(); });
 
