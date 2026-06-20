@@ -473,7 +473,6 @@ function linkify(text){
 /* ---------- Navigation ---------- */
 function navigateHome(){ ui.view='home';ui.folderId=null;ui.entryId=null;ui.folderFilter=null;ui.folderSearch=''; renderApp(); }
 function navigateToFolder(id){ ui.view='folder';ui.folderId=id;ui.entryId=null;ui.folderFilter=null;ui.folderSearch=''; renderApp(); }
-function navigateToEntry(entryId){ ui.entryFrom=ui.view; ui.view='entry'; ui.entryId=entryId; renderApp(); }
 function navigateBack(){
   if(ui.view==='entry'){ ui.view=ui.entryFrom||'home'; ui.entryId=null; renderApp(); }
   else navigateHome();
@@ -606,16 +605,6 @@ function entryCard(e,showFolder){
 }
 
 /* ---------- Wire entry list events ---------- */
-function wireList(listEl,showFolder){
-  if(!listEl) return;
-  listEl.onclick=(e)=>{
-    const rm=e.target.closest('.tag-rm');
-    if(rm){ e.preventDefault(); e.stopPropagation(); removeTag(rm.dataset.id,rm.dataset.tag); return; }
-    const db=e.target.closest('.dots-btn');
-    if(db){ e.preventDefault(); e.stopPropagation(); openDotMenu(db,db.dataset.id); }
-  };
-}
-
 /* ---------- Tag filter bar (folder view) ---------- */
 function renderTagBar(folderId){
   const bar=document.getElementById('tagbar'); if(!bar) return;
@@ -832,7 +821,7 @@ function openMoveToFolder(entryId){
   document.querySelectorAll('.folder-pick-btn').forEach(btn=>{
     btn.onclick=()=>{ e.folderId=btn.dataset.fid; writeStore(); closeModal(); renderApp(); toast('Moved',true); };
   });
-  document.getElementById('overlay').classList.add('open');
+  showModal();
 }
 
 /* ---------- Tag editor helpers ---------- */
@@ -993,7 +982,7 @@ function openEditor(mode,folderId,entryId){
   document.getElementById('cancelBtn').onclick=closeModal;
   document.getElementById('saveBtn').onclick=saveEditor;
   if(mode==='edit') wireDelete();
-  document.getElementById('overlay').classList.add('open');
+  showModal();
   setTimeout(()=>document.getElementById('f_title').focus(),60);
 }
 
@@ -1057,7 +1046,7 @@ function openRetag(entryId){
   renderDraftTags(); setupTagAutocomplete();
   document.getElementById('cancelBtn').onclick=closeModal;
   document.getElementById('saveBtn').onclick=()=>{ e.tags=editing.draftTags.slice(); writeStore(); closeModal(); renderApp(); toast('Tags updated',true); };
-  document.getElementById('overlay').classList.add('open');
+  showModal();
   setTimeout(()=>document.getElementById('tagInput').focus(),60);
 }
 
@@ -1076,7 +1065,7 @@ function openAddFolder(){
     state.folders.push(f); writeStore(); closeModal(); navigateToFolder(f.id); toast('Folder created',true);
   };
   document.getElementById('folderNameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); document.getElementById('saveBtn').click(); } });
-  document.getElementById('overlay').classList.add('open');
+  showModal();
   setTimeout(()=>document.getElementById('folderNameInput').focus(),60);
 }
 
@@ -1109,12 +1098,13 @@ function openEditFolder(id){
       document.getElementById('dYes').onclick=()=>{ state.folders=state.folders.filter(x=>x.id!==id); writeStore(); closeModal(); if(ui.folderId===id) navigateHome(); else renderApp(); toast('Folder deleted',true); };
     };
   }
-  document.getElementById('overlay').classList.add('open');
+  showModal();
   setTimeout(()=>document.getElementById('folderNameInput').focus(),60);
 }
 
 /* ---------- Modal close ---------- */
 function closeModal(){ document.getElementById('overlay').classList.remove('open'); editing=null; }
+function showModal(){ const o=document.getElementById('overlay'); o.scrollTop=0; o.classList.add('open'); }
 
 /* ---------- Toast ---------- */
 let toastT;
