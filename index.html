@@ -61,6 +61,57 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .feat-dots{background:transparent;border:none;cursor:pointer;color:var(--muted);display:grid;place-items:center;border-radius:8px;padding:4px;transition:.13s;}
 .feat-dots:hover{color:var(--ink);background:rgba(35,28,20,.06);}
 
+/* Project rows */
+.project-list{display:flex;flex-direction:column;gap:7px;}
+.project-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.16s;}
+.project-row:hover{border-color:var(--line);}
+.project-name{flex:1;font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);}
+.project-count{font-size:12px;font-weight:700;color:var(--muted);background:var(--paper-2);border:1px solid var(--line-soft);padding:2px 9px;border-radius:10px;white-space:nowrap;}
+
+/* Meeting rows */
+.meeting-list{display:flex;flex-direction:column;gap:6px;}
+.meeting-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:.14s;}
+.meeting-row:hover{border-color:var(--line);}
+.mr-main{flex:1;min-width:0;}
+.mr-title{display:block;font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mr-meta{display:block;font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mr-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;background:var(--paper-2);border:1px solid var(--line-soft);color:var(--muted);white-space:nowrap;}
+.mr-badge.done{background:rgba(80,170,110,.12);border-color:rgba(80,170,110,.3);color:#3a7a52;}
+
+/* Meeting full view */
+.meeting-view{max-width:680px;}
+.mv-title{font-family:var(--serif);font-weight:600;font-size:clamp(20px,3.5vw,28px);color:var(--ink);margin-bottom:6px;}
+.mv-meta{font-size:13px;color:var(--muted);margin-bottom:20px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.mv-date{font-weight:600;color:var(--ink-soft);}
+.mv-attendees::before{content:"· ";}
+.mv-section{margin-bottom:22px;}
+.mv-section-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:7px;}
+.mv-section-text{font-family:var(--serif);font-size:16px;line-height:1.65;color:var(--ink-soft);white-space:pre-wrap;}
+.mv-section-empty{font-size:14px;color:var(--muted);font-style:italic;}
+.mv-actions-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.mv-actions-badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:10px;background:var(--paper-2);border:1px solid var(--line-soft);color:var(--muted);}
+.mv-actions-badge.done{background:rgba(80,170,110,.12);border-color:rgba(80,170,110,.3);color:#3a7a52;}
+.action-list{display:flex;flex-direction:column;gap:10px;}
+.action-item{display:flex;align-items:flex-start;gap:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.action-check{width:20px;height:20px;border:2px solid var(--line);border-radius:5px;background:var(--card);display:grid;place-items:center;flex:0 0 auto;margin-top:1px;transition:.15s;}
+.action-item.done .action-check{background:var(--accent);border-color:var(--accent);}
+.action-check svg{display:none;width:12px;height:12px;}
+.action-item.done .action-check svg{display:block;}
+.action-text{font-family:var(--serif);font-size:16px;line-height:1.45;color:var(--ink-soft);}
+.action-item.done .action-text{text-decoration:line-through;color:var(--muted);}
+.mv-footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--line-soft);}
+
+/* Meeting editor */
+.action-editor{display:flex;flex-direction:column;gap:7px;}
+.ae-row{display:flex;gap:7px;align-items:center;}
+.ae-input{flex:1;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px;}
+.ae-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint);}
+.ae-rm{border:none;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;border-radius:7px;padding:6px;transition:.12s;flex:0 0 auto;}
+.ae-rm:hover{color:var(--accent);background:var(--accent-tint);}
+.ae-rm svg{width:14px;height:14px;}
+.field textarea.compact{min-height:80px;}
+
+/* Meetings home row */
 /* Quotes home row */
 .quotes-home-row{display:flex;align-items:center;gap:10px;background:var(--accent-tint);border:1px solid var(--accent-tint-2);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.15s;margin-bottom:16px;}
 .quotes-home-row:hover{background:var(--accent-tint-2);}
@@ -82,6 +133,65 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 /* Quotes view */
 .quotes-toolbar{display:flex;gap:10px;margin-bottom:12px;}
 .quotes-toolbar .search{flex:1;}
+
+/* Meetings home row */
+.meetings-home-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.15s;margin-bottom:8px;}
+.meetings-home-row:hover{border-color:var(--line);}
+.meetings-home-icon{display:grid;place-items:center;color:var(--ink-soft);}
+.meetings-home-icon svg{width:18px;height:18px;}
+.meetings-home-name{flex:1;font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);}
+.meetings-home-count{font-size:12px;font-weight:700;color:var(--muted);background:var(--paper-2);border:1px solid var(--line-soft);padding:2px 9px;border-radius:10px;}
+
+/* Project rows */
+.project-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:.15s;}
+.project-row:hover{border-color:var(--line);}
+.pr-main{flex:1;min-width:0;}
+.pr-name{display:block;font-family:var(--serif);font-size:17px;font-weight:600;color:var(--ink);}
+.pr-meta{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* Task badge */
+.task-badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:8px;background:var(--paper-2);color:var(--muted);}
+.task-badge.partial{background:var(--accent-tint);color:var(--accent-2);}
+.task-badge.complete{background:#d4edda;color:#2d6a4f;}
+
+/* Meeting cards (in project view) */
+.meeting-list{display:flex;flex-direction:column;gap:8px;}
+.meeting-card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 14px 11px;cursor:pointer;transition:.14s;}
+.meeting-card:hover{border-color:var(--line);}
+.mc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.mc-date{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;}
+.mc-title{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.mc-attendees{font-size:12.5px;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mc-foot{display:flex;gap:8px;align-items:center;}
+
+/* Meeting detail */
+.meeting-view{max-width:680px;}
+.mv-date{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;}
+.mv-title{font-family:var(--serif);font-weight:600;font-size:clamp(20px,3.5vw,28px);line-height:1.25;color:var(--ink);margin-bottom:6px;}
+.mv-attendees{font-size:13.5px;color:var(--muted);margin-bottom:18px;}
+.mv-attendees::before{content:"👥  ";}
+.mtg-section{margin-bottom:22px;}
+.mtg-section:last-of-type{margin-bottom:0;}
+.mtg-section-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.mtg-section-title{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.mtg-section-body{font-family:var(--serif);font-size:16px;line-height:1.65;color:var(--ink-soft);white-space:pre-wrap;}
+.mtg-section-body:empty::before{content:'—';color:var(--muted);font-style:italic;}
+.action-list{display:flex;flex-direction:column;gap:6px;}
+.action-item{display:flex;align-items:flex-start;gap:10px;cursor:pointer;padding:6px 0;}
+.action-item input[type=checkbox]{width:17px;height:17px;flex:0 0 auto;margin-top:2px;accent-color:var(--accent);cursor:pointer;}
+.action-item .ai-text{font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--ink-soft);flex:1;}
+.action-item.done .ai-text{text-decoration:line-through;color:var(--muted);}
+.mv-footer{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--line-soft);}
+.mv-date-small{font-size:12px;color:var(--muted);}
+
+/* Meeting editor action items */
+.ai-editor{display:flex;flex-direction:column;gap:7px;}
+.ai-row{display:flex;gap:8px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:8px 10px;}
+.ai-row input[type=text]{flex:1;border:none;background:transparent;font-family:var(--sans);font-size:14px;color:var(--ink);}
+.ai-row input[type=text]:focus{outline:none;}
+.ai-rm{border:none;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;border-radius:6px;padding:3px;transition:.12s;}
+.ai-rm:hover{color:var(--accent);background:var(--accent-tint);}
+.ai-rm svg{width:13px;height:13px;}
 
 /* Buttons */
 .btn{font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;display:inline-flex;align-items:center;gap:6px;transition:.15s;border:1px solid transparent;}
@@ -385,7 +495,8 @@ const I = {
   folder:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
   chevron:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
   chevL:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
-  dots:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>'
+  dots:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+  calendar:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
 };
 
 /* ---------- Storage ---------- */
@@ -404,16 +515,17 @@ function writeStore(){ writeLocal(); if(typeof cloudSaveDebounced==='function') 
 function seed(){
   const now=Date.now();
   const f1={id:uid(),name:'Notes',created:now};
+  const mp1={id:uid(),name:'Example Project',created:now};
+  const today=new Date().toISOString().slice(0,10);
   return {
     folders:[f1],
-    entries:[
-      {id:uid(),folderId:f1.id,title:'Getting started',author:'',source:'',tags:['tips'],noteType:'plain',note:'Create folders to organize your notes.\n\nUse the Quotes section (home screen) to build your quote collection.\n\nUse the global search to find anything across all folders.',sections:[],created:now,updated:now}
-    ],
+    entries:[{id:uid(),folderId:f1.id,title:'Getting started',author:'',source:'',tags:['tips'],noteType:'plain',note:'Create folders to organize your notes.\n\nUse the Quotes section to build your quote collection.\n\nUse Meetings to keep structured notes organized by project.',sections:[],created:now,updated:now}],
     quotes:[
       {id:uid(),text:'You have power over your mind — not outside events. Realize this, and you will find strength.',author:'Marcus Aurelius',source:'Meditations',tags:['Stoicism','Mindset'],created:now-500000},
-      {id:uid(),text:'We suffer more often in imagination than in reality.',author:'Seneca',source:'Letters from a Stoic',tags:['Stoicism','Perspective'],created:now-300000},
-      {id:uid(),text:'It is not that we have a short time to live, but that we waste a lot of it.',author:'Seneca',source:'On the Shortness of Life',tags:['Stoicism','Time'],created:now-100000}
-    ]
+      {id:uid(),text:'We suffer more often in imagination than in reality.',author:'Seneca',source:'Letters from a Stoic',tags:['Stoicism'],created:now-300000}
+    ],
+    meetingProjects:[mp1],
+    meetingItems:[{id:uid(),projectId:mp1.id,title:'Kick-off',date:today,attendees:'',agenda:'Introductions, project goals, timeline.',discussion:'Agreed on a two-week sprint cadence.',decisions:'Start date confirmed.',actions:[{id:uid(),text:'Share project brief with team',done:true},{id:uid(),text:'Book recurring weekly sync',done:false}],created:now,updated:now}]
   };
 }
 
@@ -467,11 +579,11 @@ function normalizeState(){
   if(!Array.isArray(state.folders)) state.folders=[];
   if(!Array.isArray(state.entries)) state.entries=[];
   if(!Array.isArray(state.quotes)) state.quotes=[];
-  state.entries.forEach(e=>{
-    if(!e.noteType) e.noteType='plain';
-    if(!Array.isArray(e.sections)) e.sections=[];
-  });
+  if(!Array.isArray(state.meetingProjects)) state.meetingProjects=[];
+  if(!Array.isArray(state.meetingItems)) state.meetingItems=[];
+  state.entries.forEach(e=>{ if(!e.noteType) e.noteType='plain'; if(!Array.isArray(e.sections)) e.sections=[]; });
   state.quotes.forEach(q=>{ if(!q.source) q.source=''; });
+  state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; });
 }
 
 /* ---------- State ---------- */
@@ -481,6 +593,7 @@ normalizeState(); migrateOldFormat();
 const ui={view:'home',folderId:null,entryId:null,entryFrom:'home',
   folderFilter:null,folderSearch:'',
   quotesSearch:'',quotesFilter:null,
+  meetingProjectId:null,meetingId:null,
   featuredId:null,globalSearch:''};
 
 /* ---------- Helpers ---------- */
@@ -869,8 +982,15 @@ function renderHomeContent(){
         <span class="folder-section-title">Folders</span>
         <button class="add-folder-btn" id="addFolderBtn">+ New folder</button>
       </div>
-      <div class="folder-list" id="folderList"></div>`;
+      <div class="folder-list" id="folderList"></div>
+      <div class="meetings-home-row" id="meetingsHomeRow" style="margin-top:16px">
+        <span class="meetings-home-icon">${I.calendar}</span>
+        <span class="meetings-home-name">Meetings</span>
+        <span class="meetings-home-count">${state.meetingProjects.length} project${state.meetingProjects.length!==1?'s':''}</span>
+        <span style="color:var(--muted)">${I.chevron}</span>
+      </div>`;
     document.getElementById('quotesHomeRow').onclick=navigateToQuotes;
+    document.getElementById('meetingsHomeRow').onclick=navigateToMeetings;
     renderFolderList();
     document.getElementById('addFolderBtn').onclick=openAddFolder;
   }
@@ -955,6 +1075,311 @@ function renderFolder(){
   if(clr) clr.onclick=()=>{ ui.folderSearch=''; renderFolder(); };
 }
 
+/* ---------- Meeting helpers ---------- */
+function fmtMeetingDate(d){
+  if(!d) return '';
+  try{ const [y,m,dy]=d.split('-').map(Number); return new Date(y,m-1,dy).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }catch(e){ return d; }
+}
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function projectName(id){ const p=state.meetingProjects.find(x=>x.id===id); return p?p.name:''; }
+function meetingString(m){
+  const parts=[];
+  if(m.title) parts.push(m.title);
+  parts.push(fmtMeetingDate(m.date));
+  if(m.attendees) parts.push('Attendees: '+m.attendees);
+  if(m.agenda) parts.push('AGENDA\n'+m.agenda);
+  if(m.discussion) parts.push('DISCUSSION\n'+m.discussion);
+  if(m.decisions) parts.push('DECISIONS\n'+m.decisions);
+  const acts=(m.actions||[]);
+  if(acts.length) parts.push('ACTION ITEMS\n'+acts.map(a=>(a.done?'[x]':'[ ]')+' '+a.text).join('\n'));
+  return parts.join('\n\n');
+}
+function actionBadge(m){
+  const acts=m.actions||[], total=acts.length, done=acts.filter(a=>a.done).length;
+  if(!total) return '';
+  return `<span class="mr-badge ${done===total?'done':''}">${done}/${total}</span>`;
+}
+
+/* ---------- Meeting navigation ---------- */
+function navigateToMeetings(){ ui.view='meetings'; renderApp(); }
+function navigateToProject(id){ ui.view='project'; ui.meetingProjectId=id; renderApp(); }
+function navigateToMeeting(id){ ui.view='meeting'; ui.meetingId=id; renderApp(); }
+
+/* ---------- Meetings view (project list) ---------- */
+function renderMeetings(){
+  const content=document.getElementById('appContent');
+  const sorted=[...state.meetingProjects].sort((a,b)=>a.name.localeCompare(b.name));
+  content.innerHTML=`<div class="project-list" id="projectList">
+    ${!sorted.length?`<div class="empty-state"><div class="big">No projects yet.</div><p>Tap + to create your first project.</p></div>`:
+    sorted.map(p=>{
+      const cnt=state.meetingItems.filter(m=>m.projectId===p.id).length;
+      return `<div class="project-row" data-pid="${p.id}">
+        <span class="project-name">${esc(p.name)}</span>
+        <span class="project-count">${cnt} meeting${cnt!==1?'s':''}</span>
+        <button class="folder-edit-btn" data-pid="${p.id}" title="Edit project">${I.edit}</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+  content.querySelectorAll('.project-row').forEach(row=>{
+    row.onclick=(e)=>{ if(e.target.closest('.folder-edit-btn')) return; navigateToProject(row.dataset.pid); };
+  });
+  content.querySelectorAll('.folder-edit-btn[data-pid]').forEach(btn=>{
+    btn.onclick=(e)=>{ e.stopPropagation(); openEditProject(btn.dataset.pid); };
+  });
+}
+
+/* ---------- Project view (meeting list) ---------- */
+function renderProject(){
+  const proj=state.meetingProjects.find(x=>x.id===ui.meetingProjectId);
+  if(!proj){ navigateToMeetings(); return; }
+  const meetings=[...state.meetingItems].filter(m=>m.projectId===ui.meetingProjectId).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const content=document.getElementById('appContent');
+  content.innerHTML=`<div class="meeting-list">
+    ${!meetings.length?`<div class="empty-state"><div class="big">No meetings yet.</div><p>Tap + to log your first meeting.</p></div>`:
+    meetings.map(m=>{
+      const title=m.title||fmtMeetingDate(m.date)||'Untitled';
+      const meta=[fmtMeetingDate(m.date),m.attendees].filter(Boolean).join(' · ');
+      return `<div class="meeting-row" data-mid="${m.id}">
+        <div class="mr-main">
+          <span class="mr-title">${esc(title)}</span>
+          ${meta?`<span class="mr-meta">${esc(meta)}</span>`:''}
+        </div>
+        ${actionBadge(m)}
+        <button class="dots-btn" data-mid="${m.id}" aria-label="Options">${I.dots}</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+  content.querySelectorAll('.meeting-row').forEach(row=>{
+    row.onclick=(e)=>{ if(e.target.closest('.dots-btn')) return; navigateToMeeting(row.dataset.mid); };
+  });
+  content.querySelectorAll('.dots-btn[data-mid]').forEach(btn=>{
+    btn.onclick=(e)=>{ e.stopPropagation(); openMeetingDotMenu(btn.dataset.mid); };
+  });
+}
+
+/* ---------- Meeting full view ---------- */
+function renderMeeting(){
+  const m=state.meetingItems.find(x=>x.id===ui.meetingId);
+  if(!m){ navigateToProject(ui.meetingProjectId); return; }
+  const acts=m.actions||[], total=acts.length, done=acts.filter(a=>a.done).length;
+  const checkSvg='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  const content=document.getElementById('appContent');
+  content.innerHTML=`<div class="meeting-view">
+    ${m.title?`<h1 class="mv-title">${esc(m.title)}</h1>`:''}
+    <div class="mv-meta">
+      ${m.date?`<span class="mv-date">${esc(fmtMeetingDate(m.date))}</span>`:''}
+      ${m.attendees?`<span class="mv-attendees">${esc(m.attendees)}</span>`:''}
+    </div>
+    <div class="mv-section">
+      <div class="mv-section-label">Agenda</div>
+      ${m.agenda?`<div class="mv-section-text">${esc(m.agenda)}</div>`:`<div class="mv-section-empty">Nothing noted.</div>`}
+    </div>
+    <div class="mv-section">
+      <div class="mv-section-label">Discussion</div>
+      ${m.discussion?`<div class="mv-section-text">${esc(m.discussion)}</div>`:`<div class="mv-section-empty">Nothing noted.</div>`}
+    </div>
+    <div class="mv-section">
+      <div class="mv-section-label">Decisions</div>
+      ${m.decisions?`<div class="mv-section-text">${esc(m.decisions)}</div>`:`<div class="mv-section-empty">Nothing noted.</div>`}
+    </div>
+    <div class="mv-section">
+      <div class="mv-actions-head">
+        <div class="mv-section-label" style="margin-bottom:0">Action items</div>
+        ${total?`<span class="mv-actions-badge ${done===total?'done':''}">${done}/${total} done</span>`:''}
+      </div>
+      ${total?`<div class="action-list" id="actionList">
+        ${acts.map(a=>`<div class="action-item ${a.done?'done':''}" data-aid="${a.id}" data-mid="${m.id}">
+          <div class="action-check">${checkSvg}</div>
+          <span class="action-text">${esc(a.text)}</span>
+        </div>`).join('')}
+      </div>`:`<div class="mv-section-empty">No action items.</div>`}
+    </div>
+    <div class="mv-footer">
+      <span class="ev-date">${fmtDate(m.created)}</span>
+      <button class="btn btn-ghost" id="mvEditBtn">${I.edit} Edit</button>
+    </div>
+  </div>`;
+  document.getElementById('mvEditBtn').onclick=()=>openMeetingEditor('edit',m.projectId,m.id);
+  document.getElementById('actionList')?.querySelectorAll('.action-item').forEach(item=>{
+    item.onclick=()=>toggleAction(item.dataset.mid,item.dataset.aid);
+  });
+}
+
+function toggleAction(meetingId,actionId){
+  const m=state.meetingItems.find(x=>x.id===meetingId); if(!m) return;
+  const a=(m.actions||[]).find(x=>x.id===actionId); if(!a) return;
+  a.done=!a.done; m.updated=Date.now();
+  writeStore(); renderMeeting();
+}
+
+/* ---------- Meeting dot menus ---------- */
+function openMeetingDotMenu(meetingId){
+  const m=state.meetingItems.find(x=>x.id===meetingId); if(!m) return;
+  const menu=document.getElementById('dotMenu'), back=document.getElementById('dmBackdrop');
+  const title=m.title||fmtMeetingDate(m.date)||'Meeting';
+  menu.innerHTML=`
+    <div class="dm-title">${esc(title.slice(0,60))}</div>
+    <button data-mdm="edit">${I.edit} Edit</button>
+    <button data-mdm="copy">${I.copy} Copy notes</button>
+    <div class="sep"></div>
+    <button data-mdm="del" style="color:var(--accent)">${I.trash} Delete</button>`;
+  menu.classList.add('open'); back.classList.add('open'); back.onclick=closeDotMenu;
+  menu.querySelector('[data-mdm="edit"]').onclick=()=>{ closeDotMenu(); openMeetingEditor('edit',m.projectId,meetingId); };
+  menu.querySelector('[data-mdm="copy"]').onclick=()=>{ closeDotMenu(); copyText(meetingString(m)); };
+  menu.querySelector('[data-mdm="del"]').onclick=()=>{
+    closeDotMenu();
+    if(confirm('Delete this meeting?')){ state.meetingItems=state.meetingItems.filter(x=>x.id!==meetingId); writeStore(); if(ui.view==='meeting') navigateToProject(ui.meetingProjectId); else renderProject(); toast('Deleted',true); }
+  };
+}
+
+/* ---------- Project management ---------- */
+function openAddProject(){
+  document.getElementById('modal').innerHTML=`
+    <h2>New project</h2>
+    <div class="field"><label>Project name</label><input type="text" id="pNameInput" placeholder="e.g. Website redesign, Q3 planning…" maxlength="60"></div>
+    <div class="modal-foot"><span></span><div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Create</button></div></div>`;
+  document.getElementById('cancelBtn').onclick=closeModal;
+  document.getElementById('saveBtn').onclick=()=>{
+    const name=(document.getElementById('pNameInput').value||'').trim();
+    if(!name){ toast('Please enter a project name'); return; }
+    const p={id:uid(),name,created:Date.now()}; state.meetingProjects.push(p);
+    writeStore(); closeModal(); navigateToProject(p.id); toast('Project created',true);
+  };
+  document.getElementById('pNameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();document.getElementById('saveBtn').click();} });
+  showModal(); setTimeout(()=>document.getElementById('pNameInput').focus(),60);
+}
+
+function openEditProject(id){
+  const p=state.meetingProjects.find(x=>x.id===id); if(!p) return;
+  const cnt=state.meetingItems.filter(m=>m.projectId===id).length;
+  document.getElementById('modal').innerHTML=`
+    <h2>Edit project</h2>
+    <div class="field"><label>Name</label><input type="text" id="pNameInput" value="${esc(p.name)}" maxlength="60"></div>
+    <div class="modal-foot">
+      <div id="footLeft"><button class="btn btn-quiet" id="delProjBtn">${I.trash} Delete</button></div>
+      <div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Save</button></div>
+    </div>`;
+  document.getElementById('cancelBtn').onclick=closeModal;
+  document.getElementById('saveBtn').onclick=()=>{
+    const name=(document.getElementById('pNameInput').value||'').trim();
+    if(!name){ toast('Please enter a name'); return; }
+    p.name=name; writeStore(); closeModal(); renderApp(); toast('Renamed',true);
+  };
+  document.getElementById('delProjBtn').onclick=()=>{
+    const msg=cnt?`Delete project and its ${cnt} meeting${cnt!==1?'s':''}?`:'Delete this project?';
+    if(!confirm(msg)) return;
+    state.meetingProjects=state.meetingProjects.filter(x=>x.id!==id);
+    state.meetingItems=state.meetingItems.filter(m=>m.projectId!==id);
+    writeStore(); closeModal(); navigateToMeetings(); toast('Project deleted',true);
+  };
+  showModal(); setTimeout(()=>document.getElementById('pNameInput').focus(),60);
+}
+
+/* ---------- Meeting editor ---------- */
+function renderMeetingProjectPicker(){
+  const btn=document.getElementById('projectToggleBtn'), drop=document.getElementById('projectToggleDrop'), nameEl=document.getElementById('projectToggleName');
+  if(!btn||!drop||!nameEl) return;
+  const sel=state.meetingProjects.find(x=>x.id===editing.projectId);
+  nameEl.textContent=sel?sel.name:'Choose a project…';
+  const cur=ui.meetingProjectId?state.meetingProjects.find(x=>x.id===ui.meetingProjectId):null;
+  const sorted=[...state.meetingProjects].sort((a,b)=>a.name.localeCompare(b.name));
+  const ordered=cur?[cur,...sorted.filter(x=>x.id!==cur.id)]:sorted;
+  drop.innerHTML=ordered.map(p=>{
+    const cnt=state.meetingItems.filter(m=>m.projectId===p.id).length;
+    const isSel=editing.projectId===p.id, isCur=cur&&p.id===cur.id;
+    return `<div class="fti ${isSel?'active':''}" data-pid="${p.id}">
+      <span>${esc(p.name)}${isCur?'<span class="ft-cur">current</span>':''}</span>
+      <span class="ft-count">${cnt}</span>
+    </div>`;
+  }).join('');
+  btn.onclick=(e)=>{ e.stopPropagation(); const o=drop.classList.toggle('open'); btn.classList.toggle('open',o); if(o) setTimeout(()=>document.addEventListener('click',()=>{ drop.classList.remove('open');btn.classList.remove('open'); },{once:true}),10); };
+  drop.querySelectorAll('.fti').forEach(item=>item.onclick=()=>{ editing.projectId=item.dataset.pid; drop.classList.remove('open'); btn.classList.remove('open'); renderMeetingProjectPicker(); });
+}
+
+function renderMeetingEditorActions(){
+  const c=document.getElementById('editorActions'); if(!c) return;
+  c.innerHTML=(editing.draftActions||[]).map(a=>`<div class="ae-row">
+    <input class="ae-input" data-aid="${a.id}" placeholder="Action item…" value="${esc(a.text)}">
+    <button type="button" class="ae-rm" data-aid="${a.id}">${I.trash}</button>
+  </div>`).join('');
+  c.oninput=e=>{ const t=e.target; const a=editing.draftActions.find(x=>x.id===t.dataset.aid); if(a) a.text=t.value; };
+  c.onclick=e=>{ const rm=e.target.closest('.ae-rm'); if(!rm) return; editing.draftActions=editing.draftActions.filter(x=>x.id!==rm.dataset.aid); renderMeetingEditorActions(); };
+  const addBtn=document.getElementById('addActionBtn'); if(addBtn) addBtn.onclick=()=>{ const na={id:uid(),text:'',done:false}; editing.draftActions.push(na); renderMeetingEditorActions(); setTimeout(()=>{ const el=c.querySelector(`[data-aid="${na.id}"]`); if(el){el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});} },50); };
+}
+
+function openMeetingEditor(mode,projectId,meetingId){
+  if(!state.meetingProjects.length){ toast('Create a project first'); openAddProject(); return; }
+  const item=meetingId?state.meetingItems.find(x=>x.id===meetingId):null;
+  const initProject=projectId||(item&&item.projectId)||(ui.meetingProjectId)||state.meetingProjects[0].id;
+  editing={mode:'meeting-'+mode, projectId:initProject, meetingId, draftActions:item?item.actions.map(a=>({...a})):[{id:uid(),text:'',done:false}]};
+  const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
+  document.getElementById('modal').innerHTML=`
+    <h2>${mode==='add'?'New meeting':'Edit meeting'}</h2>
+    <div class="field"><label>Project</label>
+      <div class="folder-toggle-wrap">
+        <button type="button" class="folder-toggle-btn" id="projectToggleBtn"><span id="projectToggleName">…</span>${I.chevron}</button>
+        <div class="fp-list" id="projectToggleDrop"></div>
+      </div>
+    </div>
+    <div class="field"><label>Date</label><input type="date" id="m_date" value="${item?item.date||todayStr():todayStr()}"></div>
+    <div class="field"><label>Title ${opt}</label><input type="text" id="m_title" placeholder="What was this meeting about?" value="${item?esc(item.title||''):''}"></div>
+    <div class="field"><label>Attendees ${opt}</label><input type="text" id="m_attendees" placeholder="Who was there?" value="${item?esc(item.attendees||''):''}"></div>
+    <div class="field"><label>Agenda</label><textarea id="m_agenda" class="compact" placeholder="What was planned…">${item?esc(item.agenda||''):''}</textarea></div>
+    <div class="field"><label>Discussion</label><textarea id="m_discussion" class="compact" placeholder="Key points discussed…">${item?esc(item.discussion||''):''}</textarea></div>
+    <div class="field"><label>Decisions</label><textarea id="m_decisions" class="compact" placeholder="What was decided…">${item?esc(item.decisions||''):''}</textarea></div>
+    <div class="field"><label>Action items</label>
+      <div id="editorActions" class="action-editor"></div>
+      <button type="button" class="btn btn-soft" id="addActionBtn" style="margin-top:8px">+ Add action</button>
+    </div>
+    <div class="modal-foot">
+      <div id="footLeft">${mode==='edit'?`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`:'<span></span>'}</div>
+      <div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">${mode==='add'?'Save meeting':'Save changes'}</button></div>
+    </div>`;
+  renderMeetingProjectPicker(); renderMeetingEditorActions();
+  document.getElementById('cancelBtn').onclick=closeModal;
+  document.getElementById('saveBtn').onclick=saveMeetingEditor;
+  if(mode==='edit') wireMeetingDelete(meetingId);
+  showModal();
+}
+
+function saveMeetingEditor(){
+  if(!editing.projectId){ toast('Please choose a project'); return; }
+  const date=document.getElementById('m_date')?.value||todayStr();
+  const title=(document.getElementById('m_title')?.value||'').trim();
+  const attendees=(document.getElementById('m_attendees')?.value||'').trim();
+  const agenda=(document.getElementById('m_agenda')?.value||'').trim();
+  const discussion=(document.getElementById('m_discussion')?.value||'').trim();
+  const decisions=(document.getElementById('m_decisions')?.value||'').trim();
+  const actions=editing.draftActions.map(a=>({id:a.id,text:(a.text||'').trim(),done:!!a.done})).filter(a=>a.text);
+  const now=Date.now();
+  if(editing.mode==='meeting-add'){
+    state.meetingItems.unshift({id:uid(),projectId:editing.projectId,title,date,attendees,agenda,discussion,decisions,actions,created:now,updated:now});
+    toast('Meeting saved',true);
+  }else{
+    const m=state.meetingItems.find(x=>x.id===editing.meetingId);
+    if(m) Object.assign(m,{projectId:editing.projectId,title,date,attendees,agenda,discussion,decisions,actions,updated:now});
+    toast('Saved',true);
+  }
+  writeStore(); closeModal();
+  if(ui.view==='meeting') renderMeeting();
+  else if(ui.view==='project') renderProject();
+  else renderApp();
+}
+
+function wireMeetingDelete(meetingId){
+  document.getElementById('delBtn').onclick=()=>{
+    const left=document.getElementById('footLeft');
+    left.innerHTML=`<div class="confirm-row"><span class="q">Delete this meeting?</span>
+      <button class="btn btn-ghost" id="dCancel" style="padding:7px 12px">Keep</button>
+      <button class="btn btn-danger" id="dYes" style="padding:7px 12px">${I.trash} Delete</button></div>`;
+    document.getElementById('dCancel').onclick=()=>{ left.innerHTML=`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`; wireMeetingDelete(meetingId); };
+    document.getElementById('dYes').onclick=()=>{
+      state.meetingItems=state.meetingItems.filter(x=>x.id!==meetingId);
+      writeStore(); closeModal(); navigateToProject(ui.meetingProjectId); toast('Deleted',true);
+    };
+  };
+}
+
 /* ---------- Header & FAB ---------- */
 function updateHeader(){
   const ba=document.getElementById('brandArea');
@@ -962,6 +1387,13 @@ function updateHeader(){
     ba.innerHTML=`<div class="brand"><h1>Common<span class="amp">place</span></h1><p>Your personal collection</p></div>`;
   }else if(ui.view==='quotes'){
     ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}Quotes</button>`;
+  }else if(ui.view==='meetings'){
+    ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}Meetings</button>`;
+  }else if(ui.view==='project'){
+    ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}${esc(projectName(ui.meetingProjectId))}</button>`;
+  }else if(ui.view==='meeting'){
+    const m=state.meetingItems.find(x=>x.id===ui.meetingId);
+    ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}${esc(m&&m.title?m.title:projectName(ui.meetingProjectId))}</button>`;
   }else if(ui.view==='folder'){
     const folder=state.folders.find(x=>x.id===ui.folderId);
     ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}${esc(folder?folder.name:'Folder')}</button>`;
@@ -971,7 +1403,7 @@ function updateHeader(){
   }
   document.getElementById('backBtn')?.addEventListener('click',navigateBack);
   const fab=document.getElementById('fab');
-  fab.style.display=(ui.view==='folder'||ui.view==='quotes')?'grid':'none';
+  fab.style.display=(['folder','quotes','meetings','project'].includes(ui.view))?'grid':'none';
 }
 
 /* ---------- Navigation ---------- */
@@ -981,7 +1413,9 @@ function navigateToQuotes(){ ui.view='quotes';ui.quotesSearch='';ui.quotesFilter
 function navigateToEntry(entryId){ ui.entryFrom=ui.view; ui.view='entry'; ui.entryId=entryId; renderApp(); }
 function navigateBack(){
   if(ui.view==='entry'){ ui.view=ui.entryFrom||'home'; ui.entryId=null; renderApp(); }
-  else if(ui.view==='quotes'||ui.view==='folder') navigateHome();
+  else if(ui.view==='meeting'){ navigateToProject(ui.meetingProjectId); }
+  else if(ui.view==='project'){ navigateToMeetings(); }
+  else if(ui.view==='meetings'||ui.view==='quotes'||ui.view==='folder'){ navigateHome(); }
   else navigateHome();
 }
 
@@ -992,6 +1426,9 @@ function renderApp(){
   else if(ui.view==='folder') renderFolder();
   else if(ui.view==='entry') renderEntry();
   else if(ui.view==='quotes') renderQuotes();
+  else if(ui.view==='meetings') renderMeetings();
+  else if(ui.view==='project') renderProject();
+  else if(ui.view==='meeting') renderMeeting();
   updateBanner();
 }
 
@@ -1452,7 +1889,12 @@ menu.addEventListener('click',e=>e.stopPropagation());
 document.getElementById('exportBtn').onclick=()=>{ closeMenu(); exportData(); };
 document.getElementById('importBtn').onclick=()=>{ closeMenu(); $id('fileInput').click(); };
 $id('fileInput').addEventListener('change',e=>{ if(e.target.files[0]) importData(e.target.files[0]); e.target.value=''; });
-$id('fab').onclick=()=>{ if(ui.view==='quotes') openQuoteEditor('add'); else openEditor('add', ui.view==='folder'?ui.folderId:null); };
+$id('fab').onclick=()=>{
+  if(ui.view==='quotes') openQuoteEditor('add');
+  else if(ui.view==='meetings') openAddProject();
+  else if(ui.view==='project') openMeetingEditor('add',ui.meetingProjectId);
+  else openEditor('add', ui.view==='folder'?ui.folderId:null);
+};
 $id('overlay').addEventListener('click',e=>{ if(e.target.id==='overlay') closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$id('overlay').classList.contains('open')) closeModal(); });
 
