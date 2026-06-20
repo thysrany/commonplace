@@ -137,7 +137,9 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 
 /* Quote cards */
 .quote-list{display:flex;flex-direction:column;gap:10px;}
-.quote-card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 16px 12px;position:relative;}
+.quote-card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 14px 14px;}
+.qc-body{display:flex;align-items:flex-start;gap:6px;}
+.qc-content{flex:1;min-width:0;}
 .qc-text{font-family:var(--serif);font-size:17px;line-height:1.55;color:var(--ink);display:block;margin-bottom:10px;}
 .qc-by{font-size:13px;color:var(--muted);font-weight:500;}
 .qc-by::before{content:"— ";color:var(--accent);}
@@ -767,10 +769,12 @@ function navigateToQuotes(){ ui.view='quotes'; ui.quotesSearch=''; ui.quotesFilt
 
 function quoteCard(q){
   return `<article class="quote-card" data-qid="${q.id}">
-    <blockquote class="qc-text">${esc(q.text)}</blockquote>
-    ${q.author?`<div class="qc-by">${esc(q.author)}</div>`:''}
-    ${q.source?`<div class="qc-source">${esc(q.source)}</div>`:''}
-    <div class="qc-foot">
+    <div class="qc-body">
+      <div class="qc-content">
+        <blockquote class="qc-text">${esc(q.text)}</blockquote>
+        ${q.author?`<div class="qc-by">${esc(q.author)}</div>`:''}
+        ${q.source?`<div class="qc-source">${esc(q.source)}</div>`:''}
+      </div>
       <button class="dots-btn" data-qid="${q.id}" aria-label="Options">${I.dots}</button>
     </div>
   </article>`;
