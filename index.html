@@ -766,14 +766,11 @@ function quoteTagPool(){
 function navigateToQuotes(){ ui.view='quotes'; ui.quotesSearch=''; ui.quotesFilter=null; renderApp(); }
 
 function quoteCard(q){
-  const tags=(q.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
   return `<article class="quote-card" data-qid="${q.id}">
     <blockquote class="qc-text">${esc(q.text)}</blockquote>
     ${q.author?`<div class="qc-by">${esc(q.author)}</div>`:''}
     ${q.source?`<div class="qc-source">${esc(q.source)}</div>`:''}
-    ${tags?`<div class="qc-tags">${tags}</div>`:''}
     <div class="qc-foot">
-      <span class="edate">${fmtDate(q.created)}</span>
       <button class="dots-btn" data-qid="${q.id}" aria-label="Options">${I.dots}</button>
     </div>
   </article>`;
