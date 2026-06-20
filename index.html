@@ -139,10 +139,17 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .ac-item{padding:9px 13px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--ink);}
 .ac-item:hover{background:var(--paper-2);}
 
-/* Folder picker in editor */
-.fp-list{display:flex;flex-direction:column;gap:5px;max-height:170px;overflow-y:auto;}
-.fp-row{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px 13px;cursor:pointer;font-family:var(--sans);font-size:13.5px;color:var(--ink);font-weight:500;text-align:left;transition:.13s;width:100%;}
-.fp-row:hover{border-color:var(--line);}
+/* Folder picker toggle in editor */
+.folder-toggle-wrap{position:relative;}
+.folder-toggle{display:flex;justify-content:space-between;align-items:center;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 13px;cursor:pointer;font-family:var(--sans);font-size:14px;color:var(--ink);font-weight:600;text-align:left;transition:.13s;}
+.folder-toggle:hover{border-color:var(--accent-tint-2);}
+.folder-toggle.open{border-radius:10px 10px 0 0;border-color:var(--accent);}
+.ft-chev{transition:transform .2s ease;display:grid;place-items:center;color:var(--muted);}
+.folder-toggle.open .ft-chev{transform:rotate(90deg);}
+.fp-list{display:none;position:absolute;left:0;right:0;top:100%;z-index:30;flex-direction:column;gap:4px;border:1px solid var(--accent);border-top:none;border-radius:0 0 10px 10px;background:var(--card);padding:6px;max-height:220px;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.fp-list.open{display:flex;}
+.fp-row{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid transparent;border-radius:8px;padding:9px 12px;cursor:pointer;font-family:var(--sans);font-size:13.5px;color:var(--ink);font-weight:500;text-align:left;transition:.12s;width:100%;}
+.fp-row:hover{background:var(--paper-2);}
 .fp-row.active{border-color:var(--accent);background:var(--accent-tint);}
 .fp-name{flex:1;}
 .fp-cur{font-size:10px;font-weight:700;background:var(--accent-tint-2);color:var(--accent-2);padding:1px 6px;border-radius:4px;margin-left:7px;vertical-align:middle;}
@@ -329,18 +336,18 @@ const STORE_KEY = 'commonplace_data_v1';
 
 /* ---------- Icons ---------- */
 const I = {
-  copy:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
-  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>',
-  shuffle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',
-  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
-  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
-  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>',
-  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>',
-  tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
-  folder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
-  chevron:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 6 6 6-6 6"/></svg>',
-  chevL:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 6-6 6 6 6"/></svg>',
-  dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>'
+  copy:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>',
+  share:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>',
+  shuffle:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',
+  edit:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 9.5-9.5z"/></svg>',
+  trash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+  x:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  check:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  tag:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+  folder:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  chevron:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+  chevL:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>',
+  dots:'<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>'
 };
 
 /* ---------- Storage ---------- */
@@ -911,18 +918,30 @@ function renderNoteArea(){
 function renderFolderPicker(){
   const el=document.getElementById('folderPicker'); if(!el) return;
   const curId=ui.view==='folder'?ui.folderId:null;
-  const others=[...state.folders].sort((a,b)=>a.name.localeCompare(b.name));
   const cur=curId?state.folders.find(x=>x.id===curId):null;
-  const ordered=cur?[cur,...others.filter(x=>x.id!==curId)]:others;
+  const sorted=[...state.folders].sort((a,b)=>a.name.localeCompare(b.name));
+  const ordered=cur?[cur,...sorted.filter(x=>x.id!==curId)]:sorted;
   el.innerHTML=ordered.map(f=>{
     const cnt=state.entries.filter(e=>e.folderId===f.id).length;
     const isCur=cur&&f.id===curId, isSel=editing.folderId===f.id;
     return `<button type="button" class="fp-row ${isSel?'active':''}" data-fid="${f.id}">
-      <span class="fp-name">${esc(f.name)}${isCur?'<span class="fp-cur">current</span>':''}</span>
+      <span class="fp-name">${esc(f.name)}${isCur?`<span class="fp-cur">current</span>`:''}</span>
       <span class="fp-count">${cnt}</span>
     </button>`;
   }).join('');
-  el.querySelectorAll('.fp-row').forEach(btn=>btn.onclick=()=>{ editing.folderId=btn.dataset.fid; renderFolderPicker(); });
+  el.querySelectorAll('.fp-row').forEach(btn=>btn.onclick=()=>{
+    editing.folderId=btn.dataset.fid;
+    // update active state without full re-render
+    el.querySelectorAll('.fp-row').forEach(b=>b.classList.toggle('active',b.dataset.fid===btn.dataset.fid));
+    // update toggle label
+    const f=state.folders.find(x=>x.id===btn.dataset.fid);
+    const nameEl=document.getElementById('folderToggleName');
+    if(nameEl&&f) nameEl.textContent=f.name;
+    // close dropdown
+    const tog=document.getElementById('folderToggleBtn');
+    if(tog) tog.classList.remove('open');
+    el.classList.remove('open');
+  });
 }
 
 /* ---------- Entry editor ---------- */
@@ -930,6 +949,7 @@ function openEditor(mode,folderId,entryId){
   if(!state.folders.length){ toast('Create a folder first'); openAddFolder(); return; }
   const item=entryId?state.entries.find(x=>x.id===entryId):null;
   const initFolder=folderId||(item&&item.folderId)||(ui.view==='folder'?ui.folderId:null)||state.folders[0].id;
+  const initFolderName=(state.folders.find(x=>x.id===initFolder)||state.folders[0]).name;
   const nt=item?.noteType||'plain';
   editing={mode,folderId:initFolder,entryId,draftTags:item?[...(item.tags||[])]:[], noteType:nt,
     plainNote:item?.note||'',
@@ -937,9 +957,17 @@ function openEditor(mode,folderId,entryId){
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
   document.getElementById('modal').innerHTML=`
     <h2>${mode==='add'?'New entry':'Edit entry'}</h2>
-    <div class="field"><label>Folder</label><div id="folderPicker" class="fp-list"></div></div>
+    <div class="field">
+      <label>Folder</label>
+      <div class="folder-toggle-wrap">
+        <button type="button" class="folder-toggle" id="folderToggleBtn">
+          <span id="folderToggleName">${esc(initFolderName)}</span>
+          <span class="ft-chev">${I.chevron}</span>
+        </button>
+        <div class="fp-list" id="folderPicker"></div>
+      </div>
+    </div>
     <div class="field"><label>Title ${opt}</label><input type="text" id="f_title" placeholder="Give it a title" value="${item?esc(item.title||''):''}"></div>
-    <div id="noteArea"></div>
     <div class="field"><label>Author ${opt}</label><input type="text" id="f_author" placeholder="Who said or wrote it?" value="${item?esc(item.author||''):''}"></div>
     <div class="field"><label>Source ${opt}</label><input type="text" id="f_source" placeholder="Book, article, URL…" value="${item?esc(item.source||''):''}"></div>
     <div class="field"><label>Tags</label>
@@ -948,10 +976,19 @@ function openEditor(mode,folderId,entryId){
         <div class="selected-tags" id="selTags"></div>
       </div>
     </div>
+    <div id="noteArea"></div>
     <div class="modal-foot">
       <div id="footLeft">${mode==='edit'?`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`:'<span></span>'}</div>
       <div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">${mode==='add'?'Add entry':'Save changes'}</button></div>
     </div>`;
+  // wire folder toggle
+  const tog=document.getElementById('folderToggleBtn'), fpl=document.getElementById('folderPicker');
+  tog.onclick=(e)=>{
+    e.stopPropagation();
+    const open=fpl.classList.toggle('open');
+    tog.classList.toggle('open',open);
+    if(open) setTimeout(()=>document.addEventListener('click',()=>{ fpl.classList.remove('open'); tog.classList.remove('open'); },{once:true}),10);
+  };
   renderFolderPicker(); renderNoteArea(); renderDraftTags(); setupTagAutocomplete();
   document.getElementById('cancelBtn').onclick=closeModal;
   document.getElementById('saveBtn').onclick=saveEditor;
