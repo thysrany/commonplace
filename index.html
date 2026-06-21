@@ -600,7 +600,7 @@ function normalizeState(){
   if(!Array.isArray(state.meetingItems)) state.meetingItems=[];
   state.entries.forEach(e=>{ if(!e.noteType) e.noteType='plain'; if(!Array.isArray(e.sections)) e.sections=[]; });
   state.quotes.forEach(q=>{ if(!q.source) q.source=''; });
-  state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; m.actions.forEach(a=>{ if(!a.due) a.due=''; }); });
+  state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; m.actions.forEach(a=>{ if(!a.due) a.due=''; }); if(!Array.isArray(m.tags)) m.tags=[]; });
 }
 
 /* ---------- State ---------- */
@@ -611,6 +611,7 @@ const ui={view:'home',folderId:null,entryId:null,entryFrom:'home',
   folderFilter:null,folderSearch:'',
   notesSearch:'',
   quotesSearch:'',quotesFilter:null,
+  meetingsSearch:'',meetingsFilter:null,
   meetingProjectId:null,meetingId:null,
   featuredId:null,globalSearch:''};
 
@@ -1144,26 +1145,97 @@ function navigateToProject(id){ ui.view='project'; ui.meetingProjectId=id; rende
 function navigateToMeeting(id){ ui.view='meeting'; ui.meetingId=id; renderApp(); }
 
 /* ---------- Meetings view (project list) ---------- */
+function meetingTagPool(){
+  const map=new Map();
+  state.meetingItems.forEach(m=>(m.tags||[]).forEach(t=>{const k=t.toLowerCase();if(!map.has(k))map.set(k,t);}));
+  return [...map.values()].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+}
+function searchMeetings(q){
+  q=q.toLowerCase();
+  return state.meetingItems.filter(m=>{
+    const hay=[m.title,m.attendees,m.agenda,m.discussion,m.decisions,...(m.tags||[])].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+function renderMeetingsTagBar(){
+  const bar=document.getElementById('mtTagbar'); if(!bar) return;
+  const pool=meetingTagPool();
+  if(!pool.length){ bar.innerHTML=''; return; }
+  const active=ui.meetingsFilter;
+  let html=`<span class="lbl">Tags</span>`;
+  html+=`<button class="chip ${active===null?'active':''}" data-tag="">All</button>`;
+  html+=pool.map(t=>`<button class="chip ${active&&active.toLowerCase()===t.toLowerCase()?'active':''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('');
+  bar.innerHTML=html;
+  bar.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ ui.meetingsFilter=c.dataset.tag||null; renderMeetingsContent(); });
+}
+function renderMeetingsContent(){
+  renderMeetingsTagBar();
+  const el=document.getElementById('meetingsMain'); if(!el) return;
+  const q=(ui.meetingsSearch||'').trim();
+  const f=ui.meetingsFilter;
+  if(q||f){
+    let results=q?searchMeetings(q):[...state.meetingItems].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    if(f) results=results.filter(m=>(m.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase()));
+    if(!results.length){
+      el.innerHTML=`<div class="empty-state"><div class="big">Nothing found.</div><p>Try different words or tags.</p></div>`;
+    }else{
+      el.innerHTML=`<div class="results-label">${results.length} meeting${results.length!==1?'s':''}</div>
+        <div class="meeting-list">${results.map(m=>{
+          const proj=state.meetingProjects.find(x=>x.id===m.projectId);
+          const title=m.title||fmtMeetingDate(m.date)||'Untitled';
+          const meta=[fmtMeetingDate(m.date),proj?proj.name:''].filter(Boolean).join(' · ');
+          return `<div class="meeting-row" data-mid="${m.id}" data-pid="${m.projectId}">
+            <div class="mr-main">
+              <span class="mr-title">${esc(title)}</span>
+              ${meta?`<span class="mr-meta">${esc(meta)}</span>`:''}
+            </div>
+            ${actionBadge(m)}
+            <span style="color:var(--muted)">${I.chevron}</span>
+          </div>`;
+        }).join('')}</div>`;
+      el.querySelectorAll('.meeting-row').forEach(row=>{
+        row.onclick=()=>{ ui.meetingProjectId=row.dataset.pid; navigateToMeeting(row.dataset.mid); };
+      });
+    }
+  }else{
+    const sorted=[...state.meetingProjects].sort((a,b)=>a.name.localeCompare(b.name));
+    el.innerHTML=!sorted.length?`<div class="empty-state"><div class="big">No projects yet.</div><p>Tap + to create your first project.</p></div>`
+      :`<div class="project-list">${sorted.map(p=>{
+        const cnt=state.meetingItems.filter(m=>m.projectId===p.id).length;
+        const open=state.meetingItems.filter(m=>m.projectId===p.id).flatMap(m=>m.actions||[]).filter(a=>!a.done).length;
+        return `<div class="project-row" data-pid="${p.id}">
+          <span class="project-name">${esc(p.name)}</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">
+            <span class="project-count">${cnt} meeting${cnt!==1?'s':''}</span>
+            ${open?`<span style="font-size:11px;color:var(--accent-2);font-weight:600">${open} open</span>`:''}
+          </div>
+          <button class="folder-edit-btn" data-pid="${p.id}" title="Edit project">${I.edit}</button>
+        </div>`;
+      }).join('')}</div>`;
+    el.querySelectorAll('.project-row').forEach(row=>{
+      row.onclick=(e)=>{ if(e.target.closest('.folder-edit-btn')) return; navigateToProject(row.dataset.pid); };
+    });
+    el.querySelectorAll('.folder-edit-btn[data-pid]').forEach(btn=>{
+      btn.onclick=(e)=>{ e.stopPropagation(); openEditProject(btn.dataset.pid); };
+    });
+  }
+}
 function renderMeetings(){
   const content=document.getElementById('appContent');
-  const sorted=[...state.meetingProjects].sort((a,b)=>a.name.localeCompare(b.name));
-  content.innerHTML=`<div class="project-list" id="projectList">
-    ${!sorted.length?`<div class="empty-state"><div class="big">No projects yet.</div><p>Tap + to create your first project.</p></div>`:
-    sorted.map(p=>{
-      const cnt=state.meetingItems.filter(m=>m.projectId===p.id).length;
-      return `<div class="project-row" data-pid="${p.id}">
-        <span class="project-name">${esc(p.name)}</span>
-        <span class="project-count">${cnt} meeting${cnt!==1?'s':''}</span>
-        <button class="folder-edit-btn" data-pid="${p.id}" title="Edit project">${I.edit}</button>
-      </div>`;
-    }).join('')}
-  </div>`;
-  content.querySelectorAll('.project-row').forEach(row=>{
-    row.onclick=(e)=>{ if(e.target.closest('.folder-edit-btn')) return; navigateToProject(row.dataset.pid); };
-  });
-  content.querySelectorAll('.folder-edit-btn[data-pid]').forEach(btn=>{
-    btn.onclick=(e)=>{ e.stopPropagation(); openEditProject(btn.dataset.pid); };
-  });
+  content.innerHTML=`<div class="quotes-toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="mtSearch" placeholder="Search meetings…" value="${esc(ui.meetingsSearch||'')}">
+      ${ui.meetingsSearch?`<button class="clear-btn" id="mtClear">✕</button>`:''}
+    </div>
+  </div>
+  <div class="tagbar" id="mtTagbar"></div>
+  <div id="meetingsMain"></div>`;
+  renderMeetingsContent();
+  const si=document.getElementById('mtSearch');
+  si.addEventListener('input',()=>{ ui.meetingsSearch=si.value; renderMeetingsContent(); });
+  const clr=document.getElementById('mtClear');
+  if(clr) clr.onclick=()=>{ ui.meetingsSearch=''; renderMeetings(); };
 }
 
 /* ---------- Project view (meeting list) ---------- */
@@ -1209,6 +1281,7 @@ function renderMeeting(){
       ${m.date?`<span class="mv-date">${esc(fmtMeetingDate(m.date))}</span>`:''}
       ${m.attendees?`<span class="mv-attendees">${esc(m.attendees)}</span>`:''}
     </div>
+    ${(m.tags&&m.tags.length)?`<div class="ev-tags" style="margin-bottom:12px">${m.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
     <div class="mv-section">
       <div class="mv-section-label">Agenda</div>
       ${m.agenda?`<div class="mv-section-text">${esc(m.agenda)}</div>`:`<div class="mv-section-empty">Nothing noted.</div>`}
@@ -1271,14 +1344,37 @@ function openMeetingDotMenu(meetingId){
     <button data-mdm="edit">${I.edit} Edit</button>
     <button data-mdm="copy">${I.copy} Copy notes</button>
     <div class="sep"></div>
+    <button data-mdm="tags">${I.tag} Edit tags</button>
+    <div class="sep"></div>
     <button data-mdm="del" style="color:var(--accent)">${I.trash} Delete</button>`;
   menu.classList.add('open'); back.classList.add('open'); back.onclick=closeDotMenu;
   menu.querySelector('[data-mdm="edit"]').onclick=()=>{ closeDotMenu(); openMeetingEditor('edit',m.projectId,meetingId); };
   menu.querySelector('[data-mdm="copy"]').onclick=()=>{ closeDotMenu(); copyText(meetingString(m)); };
+  menu.querySelector('[data-mdm="tags"]').onclick=()=>{ closeDotMenu(); openMeetingRetag(meetingId); };
   menu.querySelector('[data-mdm="del"]').onclick=()=>{
     closeDotMenu();
     if(confirm('Delete this meeting?')){ state.meetingItems=state.meetingItems.filter(x=>x.id!==meetingId); writeStore(); if(ui.view==='meeting') navigateToProject(ui.meetingProjectId); else renderProject(); toast('Deleted',true); }
   };
+}
+
+function openMeetingRetag(meetingId){
+  const m=state.meetingItems.find(x=>x.id===meetingId); if(!m) return;
+  editing={mode:'meeting-retag',meetingId,draftTags:[...(m.tags||[])]};
+  const title=m.title||fmtMeetingDate(m.date)||'Meeting';
+  document.getElementById('modal').innerHTML=`
+    <h2>Edit tags</h2>
+    <div class="sub">${esc(title.slice(0,60))}</div>
+    <div class="field"><label>Tags</label>
+      <div class="tag-editor">
+        <div class="ac-wrap"><input type="text" id="tagInput" placeholder="Type a tag…" autocomplete="off"><div class="ac-drop" id="tagDropdown"></div></div>
+        <div class="selected-tags" id="selTags"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><span></span><div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Save tags</button></div></div>`;
+  renderDraftTags(); setupTagAutocomplete();
+  document.getElementById('cancelBtn').onclick=closeModal;
+  document.getElementById('saveBtn').onclick=()=>{ m.tags=editing.draftTags.slice(); writeStore(); closeModal(); if(ui.view==='meetings') renderMeetingsContent(); else if(ui.view==='meeting') renderMeeting(); toast('Tags updated',true); };
+  showModal(); setTimeout(()=>document.getElementById('tagInput').focus(),60);
 }
 
 /* ---------- Project management ---------- */
@@ -1375,7 +1471,9 @@ function openMeetingEditor(mode,projectId,meetingId){
   if(!state.meetingProjects.length){ toast('Create a project first'); openAddProject(); return; }
   const item=meetingId?state.meetingItems.find(x=>x.id===meetingId):null;
   const initProject=projectId||(item&&item.projectId)||(ui.meetingProjectId)||state.meetingProjects[0].id;
-  editing={mode:'meeting-'+mode, projectId:initProject, meetingId, draftActions:item?item.actions.map(a=>({...a,due:a.due||''})):[{id:uid(),text:'',done:false,due:''}]};
+  editing={mode:'meeting-'+mode, projectId:initProject, meetingId,
+    draftTags:item?[...(item.tags||[])]:[], 
+    draftActions:item?item.actions.map(a=>({...a,due:a.due||''})):[{id:uid(),text:'',done:false,due:''}]};
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
   document.getElementById('modal').innerHTML=`
     <h2>${mode==='add'?'New meeting':'Edit meeting'}</h2>
@@ -1388,6 +1486,12 @@ function openMeetingEditor(mode,projectId,meetingId){
     <div class="field"><label>Date</label><input type="date" id="m_date" value="${item?item.date||todayStr():todayStr()}"></div>
     <div class="field"><label>Title ${opt}</label><input type="text" id="m_title" placeholder="What was this meeting about?" value="${item?esc(item.title||''):''}"></div>
     <div class="field"><label>Attendees ${opt}</label><input type="text" id="m_attendees" placeholder="Who was there?" value="${item?esc(item.attendees||''):''}"></div>
+    <div class="field"><label>Tags ${opt}</label>
+      <div class="tag-editor">
+        <div class="ac-wrap"><input type="text" id="tagInput" placeholder="Type a tag…" autocomplete="off"><div class="ac-drop" id="tagDropdown"></div></div>
+        <div class="selected-tags" id="selTags"></div>
+      </div>
+    </div>
     <div class="field"><label>Agenda</label><textarea id="m_agenda" class="compact" placeholder="What was planned…">${item?esc(item.agenda||''):''}</textarea></div>
     <div class="field"><label>Discussion</label><textarea id="m_discussion" class="compact" placeholder="Key points discussed…">${item?esc(item.discussion||''):''}</textarea></div>
     <div class="field"><label>Decisions</label><textarea id="m_decisions" class="compact" placeholder="What was decided…">${item?esc(item.decisions||''):''}</textarea></div>
@@ -1399,7 +1503,7 @@ function openMeetingEditor(mode,projectId,meetingId){
       <div id="footLeft">${mode==='edit'?`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`:'<span></span>'}</div>
       <div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">${mode==='add'?'Save meeting':'Save changes'}</button></div>
     </div>`;
-  renderMeetingProjectPicker(); renderMeetingEditorActions();
+  renderMeetingProjectPicker(); renderMeetingEditorActions(); renderDraftTags(); setupTagAutocomplete();
   document.getElementById('cancelBtn').onclick=closeModal;
   document.getElementById('saveBtn').onclick=saveMeetingEditor;
   if(mode==='edit') wireMeetingDelete(meetingId);
@@ -1414,14 +1518,15 @@ function saveMeetingEditor(){
   const agenda=(document.getElementById('m_agenda')?.value||'').trim();
   const discussion=(document.getElementById('m_discussion')?.value||'').trim();
   const decisions=(document.getElementById('m_decisions')?.value||'').trim();
+  const tags=editing.draftTags.slice();
   const actions=editing.draftActions.map(a=>({id:a.id,text:(a.text||'').trim(),done:!!a.done,due:a.due||''})).filter(a=>a.text);
   const now=Date.now();
   if(editing.mode==='meeting-add'){
-    state.meetingItems.unshift({id:uid(),projectId:editing.projectId,title,date,attendees,agenda,discussion,decisions,actions,created:now,updated:now});
+    state.meetingItems.unshift({id:uid(),projectId:editing.projectId,title,date,attendees,tags,agenda,discussion,decisions,actions,created:now,updated:now});
     toast('Meeting saved',true);
   }else{
     const m=state.meetingItems.find(x=>x.id===editing.meetingId);
-    if(m) Object.assign(m,{projectId:editing.projectId,title,date,attendees,agenda,discussion,decisions,actions,updated:now});
+    if(m) Object.assign(m,{projectId:editing.projectId,title,date,attendees,tags,agenda,discussion,decisions,actions,updated:now});
     toast('Saved',true);
   }
   writeStore(); closeModal();
