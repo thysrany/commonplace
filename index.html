@@ -851,7 +851,7 @@ function openQuoteDotMenu(quoteId){
 /* ---------- Quote editor ---------- */
 function openQuoteEditor(mode,quoteId){
   const item=quoteId?state.quotes.find(x=>x.id===quoteId):null;
-  editing={mode:'quote-'+mode, quoteId, draftTags:item?[...(item.tags||[])]:[]};
+  editing={mode:'quote-'+mode, quoteId, getTagPool:()=>quoteTagPool(), draftTags:item?[...(item.tags||[])]:[]};
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
   document.getElementById('modal').innerHTML=`
     <h2>${mode==='add'?'New quote':'Edit quote'}</h2>
@@ -911,7 +911,7 @@ function wireQuoteDelete(quoteId){
 
 function openQuoteRetag(quoteId){
   const q=state.quotes.find(x=>x.id===quoteId); if(!q) return;
-  editing={mode:'quote-retag',quoteId,draftTags:[...(q.tags||[])]};
+  editing={mode:'quote-retag',quoteId,getTagPool:()=>quoteTagPool(),draftTags:[...(q.tags||[])]};
   document.getElementById('modal').innerHTML=`
     <h2>Edit tags</h2>
     <div class="sub">${esc((q.text||'').slice(0,60))}</div>
@@ -1381,7 +1381,7 @@ function openMeetingDotMenu(meetingId){
 
 function openMeetingRetag(meetingId){
   const m=state.meetingItems.find(x=>x.id===meetingId); if(!m) return;
-  editing={mode:'meeting-retag',meetingId,draftTags:[...(m.tags||[])]};
+  editing={mode:'meeting-retag',meetingId,getTagPool:()=>meetingTagPool(),draftTags:[...(m.tags||[])]};
   const title=m.title||fmtMeetingDate(m.date)||'Meeting';
   document.getElementById('modal').innerHTML=`
     <h2>Edit tags</h2>
@@ -1494,7 +1494,7 @@ function openMeetingEditor(mode,projectId,meetingId){
   const item=meetingId?state.meetingItems.find(x=>x.id===meetingId):null;
   const initProject=projectId||(item&&item.projectId)||(ui.meetingProjectId)||state.meetingProjects[0].id;
   editing={mode:'meeting-'+mode, projectId:initProject, meetingId,
-    draftTags:item?[...(item.tags||[])]:[], 
+    getTagPool:()=>meetingTagPool(), draftTags:item?[...(item.tags||[])]:[], 
     draftActions:item?item.actions.map(a=>({...a,due:a.due||''})):[{id:uid(),text:'',done:false,due:''}]};
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
   document.getElementById('modal').innerHTML=`
@@ -1689,18 +1689,13 @@ function renderDraftTags(){
   el.innerHTML=editing.draftTags.map(t=>`<span class="seltag">${esc(t)}<button type="button" data-t="${esc(t)}">${I.x}</button></span>`).join('');
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>removeDraftTag(b.dataset.t));
 }
-function getContextTagPool(){
-  if(!editing||!editing.mode) return tagPool(null);
-  if(editing.mode.startsWith('quote')) return quoteTagPool();
-  if(editing.mode.startsWith('meeting')) return meetingTagPool();
-  return tagPool(null);
-}
 function setupTagAutocomplete(){
   const input=document.getElementById('tagInput'), drop=document.getElementById('tagDropdown'); if(!input||!drop) return;
+  const getPool=(editing&&editing.getTagPool)?editing.getTagPool:()=>tagPool(null);
   const refresh=()=>{
     const q=input.value.trim().toLowerCase();
     if(!q){ drop.classList.remove('open'); return; }
-    const matches=getContextTagPool().filter(t=>t.toLowerCase().includes(q)&&!editing.draftTags.some(x=>x.toLowerCase()===t.toLowerCase()));
+    const matches=getPool().filter(t=>t.toLowerCase().includes(q)&&!editing.draftTags.some(x=>x.toLowerCase()===t.toLowerCase()));
     if(!matches.length){ drop.classList.remove('open'); return; }
     drop.innerHTML=matches.slice(0,7).map(t=>`<div class="ac-item" data-t="${esc(t)}">${esc(t)}</div>`).join('');
     drop.querySelectorAll('.ac-item').forEach(item=>{ item.onmousedown=(e)=>{ e.preventDefault(); addDraftTag(item.dataset.t); input.value=''; drop.classList.remove('open'); input.focus(); }; });
@@ -1797,7 +1792,7 @@ function openEditor(mode,folderId,entryId){
   const initFolder=folderId||(item&&item.folderId)||(ui.view==='folder'?ui.folderId:null)||state.folders[0].id;
   const initFolderName=(state.folders.find(x=>x.id===initFolder)||state.folders[0]).name;
   const nt=item?.noteType||'plain';
-  editing={mode,folderId:initFolder,entryId,draftTags:item?[...(item.tags||[])]:[], noteType:nt,
+  editing={mode,folderId:initFolder,entryId,getTagPool:()=>tagPool(null),draftTags:item?[...(item.tags||[])]:[], noteType:nt,
     plainNote:item?.note||'',
     draftSections:item?.sections?.length?item.sections.map(s=>({...s})):[{id:uid(),title:'',text:''}]};
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
@@ -1887,7 +1882,7 @@ function wireDelete(){
 /* ---------- Retag modal ---------- */
 function openRetag(entryId){
   const e=state.entries.find(x=>x.id===entryId); if(!e) return;
-  editing={mode:'retag',entryId,draftTags:[...(e.tags||[])]};
+  editing={mode:'retag',entryId,getTagPool:()=>tagPool(null),draftTags:[...(e.tags||[])]};
   const headline=e.title||(e.note||'').slice(0,50);
   document.getElementById('modal').innerHTML=`
     <h2>Edit tags</h2>
