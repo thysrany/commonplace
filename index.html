@@ -1689,12 +1689,18 @@ function renderDraftTags(){
   el.innerHTML=editing.draftTags.map(t=>`<span class="seltag">${esc(t)}<button type="button" data-t="${esc(t)}">${I.x}</button></span>`).join('');
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>removeDraftTag(b.dataset.t));
 }
+function getContextTagPool(){
+  if(!editing||!editing.mode) return tagPool(null);
+  if(editing.mode.startsWith('quote')) return quoteTagPool();
+  if(editing.mode.startsWith('meeting')) return meetingTagPool();
+  return tagPool(null);
+}
 function setupTagAutocomplete(){
   const input=document.getElementById('tagInput'), drop=document.getElementById('tagDropdown'); if(!input||!drop) return;
   const refresh=()=>{
     const q=input.value.trim().toLowerCase();
     if(!q){ drop.classList.remove('open'); return; }
-    const matches=tagPool(null).filter(t=>t.toLowerCase().includes(q)&&!editing.draftTags.some(x=>x.toLowerCase()===t.toLowerCase()));
+    const matches=getContextTagPool().filter(t=>t.toLowerCase().includes(q)&&!editing.draftTags.some(x=>x.toLowerCase()===t.toLowerCase()));
     if(!matches.length){ drop.classList.remove('open'); return; }
     drop.innerHTML=matches.slice(0,7).map(t=>`<div class="ac-item" data-t="${esc(t)}">${esc(t)}</div>`).join('');
     drop.querySelectorAll('.ac-item').forEach(item=>{ item.onmousedown=(e)=>{ e.preventDefault(); addDraftTag(item.dataset.t); input.value=''; drop.classList.remove('open'); input.focus(); }; });
