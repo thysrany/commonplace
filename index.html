@@ -290,6 +290,7 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .ac-drop.open{display:block;animation:pop .12s ease;}
 .ac-item{padding:9px 13px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--ink);}
 .ac-item:hover{background:var(--paper-2);}
+.ac-create{color:var(--accent);}
 
 /* Folder picker toggle in editor */
 .folder-toggle-wrap{position:relative;}
@@ -1693,19 +1694,19 @@ function setupTagAutocomplete(){
   const input=document.getElementById('tagInput'), drop=document.getElementById('tagDropdown'); if(!input||!drop) return;
   const getPool=(editing&&editing.getTagPool)?editing.getTagPool:()=>tagPool(null);
   const refresh=()=>{
-    const q=input.value.trim().toLowerCase();
-    if(!q){ drop.classList.remove('open'); return; }
-    const matches=getPool().filter(t=>t.toLowerCase().includes(q)&&!editing.draftTags.some(x=>x.toLowerCase()===t.toLowerCase()));
-    if(!matches.length){ drop.classList.remove('open'); return; }
-    drop.innerHTML=matches.slice(0,7).map(t=>`<div class="ac-item" data-t="${esc(t)}">${esc(t)}</div>`).join('');
+    const q=input.value.trim(); if(!q){ drop.classList.remove('open'); return; }
+    const ql=q.toLowerCase();
+    const matches=getPool().filter(t=>t.toLowerCase().includes(ql)&&!editing.draftTags.some(x=>x.toLowerCase()===t.toLowerCase()));
+    const exactExists=getPool().some(t=>t.toLowerCase()===ql)||editing.draftTags.some(x=>x.toLowerCase()===ql);
+    let html=matches.slice(0,6).map(t=>`<div class="ac-item" data-t="${esc(t)}">${esc(t)}</div>`).join('');
+    if(!exactExists) html+=`<div class="ac-item ac-create" data-t="${esc(normTag(q))}">+ Add &ldquo;${esc(q)}&rdquo;</div>`;
+    if(!html){ drop.classList.remove('open'); return; }
+    drop.innerHTML=html;
     drop.querySelectorAll('.ac-item').forEach(item=>{ item.onmousedown=(e)=>{ e.preventDefault(); addDraftTag(item.dataset.t); input.value=''; drop.classList.remove('open'); input.focus(); }; });
     drop.classList.add('open');
   };
   input.oninput=refresh;
-  input.onkeydown=(e)=>{
-    if(e.key==='Enter'){ e.preventDefault(); const v=normTag(input.value); if(v){ addDraftTag(v); input.value=''; drop.classList.remove('open'); } }
-    if(e.key==='Escape') drop.classList.remove('open');
-  };
+  input.onkeydown=(e)=>{ if(e.key==='Enter'){ e.preventDefault(); const v=normTag(input.value); if(v){ addDraftTag(v); input.value=''; drop.classList.remove('open'); } } if(e.key==='Escape') drop.classList.remove('open'); };
   input.onblur=()=>setTimeout(()=>drop.classList.remove('open'),150);
 }
 
