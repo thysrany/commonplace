@@ -334,9 +334,14 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 .ev-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
 .ev-body{margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft);}
 .ev-note{font-family:var(--serif);font-size:17px;line-height:1.75;color:var(--ink-soft);}
-.note-section{margin-bottom:22px;}
-.note-section:last-child{margin-bottom:0;}
-.ns-title{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px;}
+.ns-accordion{border:1px solid var(--line-soft);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.ns-accordion:last-child{margin-bottom:0;}
+.ns-acc-title{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;cursor:pointer;list-style:none;background:var(--card);user-select:none;}
+.ns-acc-title::-webkit-details-marker{display:none;}
+.ns-acc-label{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink);flex:1;}
+.ns-acc-chev{transition:transform .2s ease;color:var(--muted);flex:0 0 auto;}
+details.ns-accordion[open] .ns-acc-chev{transform:rotate(90deg);}
+.ns-acc-body{padding:12px 15px 15px;border-top:1px solid var(--line-soft);font-family:var(--serif);font-size:16px;line-height:1.75;color:var(--ink-soft);}
 .ns-text{font-family:var(--serif);font-size:16px;line-height:1.75;color:var(--ink-soft);}
 .note-link{color:var(--accent);text-decoration:underline;word-break:break-all;}
 .note-link:hover{color:var(--accent-2);}
@@ -692,10 +697,13 @@ function renderEntry(){
   if(!e){ navigateBack(); return; }
   let bodyHtml;
   if(e.noteType==='structured'&&e.sections&&e.sections.length){
-    bodyHtml=e.sections.map(s=>`<div class="note-section">
-      ${s.title?`<div class="ns-title">${esc(s.title)}</div>`:''}
-      ${s.text?`<div class="ns-text">${linkify(s.text)}</div>`:''}
-    </div>`).join('');
+    bodyHtml=e.sections.map((s,i)=>`<details class="ns-accordion"${i===0?' open':''}>
+      <summary class="ns-acc-title">
+        <span class="ns-acc-label">${esc(s.title||'Section '+(i+1))}</span>
+        <span class="ns-acc-chev">${I.chevron}</span>
+      </summary>
+      <div class="ns-acc-body">${s.text?linkify(s.text):'<span style="color:var(--muted);font-style:italic">Empty</span>'}</div>
+    </details>`).join('');
   }else{ bodyHtml=`<div class="ev-note">${linkify(e.note||'')}</div>`; }
   document.getElementById('appContent').innerHTML=`<div class="entry-view">
     ${e.title?`<h1 class="ev-title">${esc(e.title)}</h1>`:''}
