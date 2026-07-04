@@ -452,6 +452,7 @@ details.ns-accordion[open] .ns-acc-chev{transform:rotate(90deg);}
 .ec-date-badge{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;background:var(--accent-tint);border:1px solid var(--accent-tint-2);border-radius:9px;padding:5px 9px;min-width:48px;text-align:center;}
 .ec-day{font-family:var(--serif);font-weight:700;font-size:22px;line-height:1;color:var(--accent-2);}
 .ec-mon{font-size:10px;font-weight:600;color:var(--muted);white-space:nowrap;margin-top:1px;}
+.ec-dow{font-size:9px;font-weight:700;color:var(--accent-2);opacity:.7;text-transform:uppercase;letter-spacing:.04em;margin-top:1px;}
 .ec-info{flex:1;min-width:0;}
 .ec-title{display:block;font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ec-ago{display:block;font-size:11.5px;color:var(--muted);margin-top:2px;}
@@ -634,7 +635,6 @@ function normalizeState(){
   if(!Array.isArray(state.meetingItems)) state.meetingItems=[];
   state.entries.forEach(e=>{ if(!e.noteType) e.noteType='plain'; if(!Array.isArray(e.sections)) e.sections=[]; });
   state.quotes.forEach(q=>{ if(!q.source) q.source=''; if(!q.context) q.context=''; });
-  if(!Array.isArray(state.eventFolders)) state.eventFolders=[];
   if(!Array.isArray(state.eventItems)) state.eventItems=[];
   state.eventItems.forEach(e=>{ if(!Array.isArray(e.tags)) e.tags=[]; if(!e.date) e.date=''; });
   state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; m.actions.forEach(a=>{ if(!a.due) a.due=''; }); if(!Array.isArray(m.tags)) m.tags=[]; });
@@ -649,7 +649,6 @@ const ui={view:'home',folderId:null,entryId:null,entryFrom:'home',
   notesSearch:'',notesFilter:null,
   quotesSearch:'',quotesFilter:null,
   eventsSearch:'',eventsFilter:null,
-  eventFolderId:null,eventFolderSearch:'',eventFolderFilter:null,
   meetingsSearch:'',meetingsFilter:null,
   meetingProjectId:null,meetingId:null,
   featuredId:null,globalSearch:''};
@@ -989,12 +988,16 @@ function fmtRelativeDate(dateStr){
     let y=today.getFullYear()-ev.getFullYear(),m=today.getMonth()-ev.getMonth(),d=today.getDate()-ev.getDate();
     if(d<0){m--;d+=new Date(today.getFullYear(),today.getMonth(),0).getDate();}
     if(m<0){y--;m+=12;}
-    if(y>=1) return y+' year'+(y>1?'s':'')+' ago';
+    if(y>=1){
+      const anniversary=new Date(ev.getFullYear()+y,ev.getMonth(),ev.getDate());
+      const remainDays=Math.floor((today-anniversary)/86400000);
+      const dStr=remainDays>0?' and '+remainDays+' day'+(remainDays>1?'s':''):'';
+      return y+' year'+(y>1?'s':'')+dStr+' ago';
+    }
     const dPart=d>0?' and '+d+' day'+(d>1?'s':''):'';
     return m+' month'+(m>1?'s':'')+dPart+' ago';
   }catch(e){return '';}
 }
-function eventFolderName(id){ const f=state.eventFolders.find(x=>x.id===id); return f?f.name:''; }
 function eventTagPool(folderId){
   const pool=folderId?state.eventItems.filter(e=>e.folderId===folderId):state.eventItems;
   const map=new Map();
@@ -1005,6 +1008,7 @@ function eventCard(ev){
   const d=ev.date?new Date(ev.date+'T00:00:00'):null;
   const day=d?d.getDate():'';
   const mon=d?d.toLocaleDateString(undefined,{month:'short',year:'numeric'}):'';
+  const dow=d?d.toLocaleDateString(undefined,{weekday:'short'}):'';
   const ago=fmtRelativeDate(ev.date);
   const tags=(ev.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
   return `<details class="event-card" data-evid="${ev.id}">
@@ -1012,6 +1016,7 @@ function eventCard(ev){
       <span class="ec-date-badge">
         <span class="ec-day">${day}</span>
         <span class="ec-mon">${esc(mon)}</span>
+        ${dow?`<span class="ec-dow">${esc(dow)}</span>`:''}
       </span>
       <span class="ec-info">
         <span class="ec-title">${esc(ev.title||'Untitled')}</span>
@@ -1030,7 +1035,6 @@ function eventCard(ev){
 
 /* ---------- Events navigation ---------- */
 function navigateToEvents(){ ui.view='events';ui.eventsSearch='';ui.eventsFilter=null; renderApp(); }
-function navigateToEventFolder(id){ ui.view='eventFolder';ui.eventFolderId=id;ui.eventFolderSearch='';ui.eventFolderFilter=null; renderApp(); }
 
 /* ---------- Events view (folder list) ---------- */
 function renderEventsTagBar(){
@@ -1047,40 +1051,22 @@ function renderEventsTagBar(){
 function renderEventsContent(){
   renderEventsTagBar();
   const el=document.getElementById('eventsMain'); if(!el) return;
-  const q=(ui.eventsSearch||'').trim();
+  const q=(ui.eventsSearch||'').trim().toLowerCase();
   const f=ui.eventsFilter;
-  if(q||f){
-    let results=q?state.eventItems.filter(e=>[e.title,e.author,e.description,...(e.tags||[])].filter(Boolean).join(' ').toLowerCase().includes(q.toLowerCase())):
-      [...state.eventItems];
-    if(f) results=results.filter(e=>(e.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase()));
-    results.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    el.innerHTML=`<div class="results-label">${results.length} event${results.length!==1?'s':''}</div>
-      <div class="event-list" id="evResultList">${results.length?results.map(ev=>eventCard(ev)).join(''):`<div class="empty-state"><div class="big">Nothing found.</div></div>`}</div>`;
-    el.querySelector('#evResultList')?.addEventListener('click',ev=>{
-      const db=ev.target.closest('.dots-btn');
-      if(db){ev.preventDefault();ev.stopPropagation();openEventDotMenu(db.dataset.evid);}
-    });
+  let items=[...state.eventItems].sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(q) items=items.filter(e=>[e.title,e.author,e.description,...(e.tags||[])].filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(f) items=items.filter(e=>(e.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase()));
+  if(!items.length){
+    el.innerHTML=`<div class="empty-state"><div class="big">${state.eventItems.length?'Nothing found.':'No events yet.'}</div><p>${state.eventItems.length?'Try different search or tags.':'Tap + to add your first event.'}</p></div>`;
   }else{
-    const sorted=[...state.eventFolders].sort((a,b)=>a.name.localeCompare(b.name));
-    el.innerHTML=!sorted.length?`<div class="empty-state"><div class="big">No folders yet.</div><p>Tap + to create your first folder.</p></div>`
-      :`<div class="folder-section-head"><span class="folder-section-title">Folders</span><button class="add-folder-btn" id="addEvFolderBtn">+ New folder</button></div>
-        <div class="folder-list">${sorted.map(f=>{
-          const cnt=state.eventItems.filter(e=>e.folderId===f.id).length;
-          return `<div class="folder-row" data-id="${f.id}">
-            <span class="folder-name">${esc(f.name)}</span>
-            <span class="folder-count">${cnt}</span>
-            <button class="folder-edit-btn" data-id="${f.id}">${I.edit}</button>
-          </div>`;
-        }).join('')}</div>`;
-    document.getElementById('addEvFolderBtn')?.addEventListener('click',openAddEventFolder);
-    el.querySelectorAll('.folder-row').forEach(row=>{
-      row.onclick=(e)=>{ if(e.target.closest('.folder-edit-btn')) return; navigateToEventFolder(row.dataset.id); };
-    });
-    el.querySelectorAll('.folder-edit-btn').forEach(btn=>{
-      btn.onclick=(e)=>{ e.stopPropagation(); openEditEventFolder(btn.dataset.id); };
-    });
+    el.innerHTML=`<div class="event-list" id="evList">${items.map(ev=>eventCard(ev)).join('')}</div>`;
+    document.getElementById('evList').onclick=(e)=>{
+      const db=e.target.closest('.dots-btn');
+      if(db){e.preventDefault();e.stopPropagation();openEventDotMenu(db.dataset.evid);}
+    };
   }
 }
+
 function renderEvents(){
   const content=document.getElementById('appContent');
   const q=ui.eventsSearch||'';
@@ -1101,59 +1087,6 @@ function renderEvents(){
 }
 
 /* ---------- Event folder view (event list) ---------- */
-function renderEventFolderTagBar(){
-  const bar=document.getElementById('efTagbar'); if(!bar) return;
-  const pool=eventTagPool(ui.eventFolderId);
-  if(!pool.length){ bar.innerHTML=''; return; }
-  const active=ui.eventFolderFilter;
-  let html=`<span class="lbl">Tags</span>`;
-  html+=`<button class="chip ${active===null?'active':''}" data-tag="">All</button>`;
-  html+=pool.map(t=>`<button class="chip ${active&&active.toLowerCase()===t.toLowerCase()?'active':''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('');
-  bar.innerHTML=html;
-  bar.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ ui.eventFolderFilter=c.dataset.tag||null; renderEventFolderContent(); });
-}
-function renderEventFolderContent(){
-  renderEventFolderTagBar();
-  const el=document.getElementById('eventList'); if(!el) return;
-  const q=(ui.eventFolderSearch||'').trim().toLowerCase();
-  const f=ui.eventFolderFilter;
-  let items=state.eventItems.filter(e=>e.folderId===ui.eventFolderId)
-    .sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-  if(q) items=items.filter(e=>[e.title,e.author,e.description,...(e.tags||[])].filter(Boolean).join(' ').toLowerCase().includes(q));
-  if(f) items=items.filter(e=>(e.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase()));
-  if(!items.length){
-    const total=state.eventItems.filter(e=>e.folderId===ui.eventFolderId).length;
-    el.innerHTML=`<div class="empty-state"><div class="big">${total?'Nothing matches.':'No events yet.'}</div><p>${total?'Try different search or tags.':'Tap + to add your first event.'}</p></div>`;
-  }else{
-    el.innerHTML=items.map(ev=>eventCard(ev)).join('');
-    el.onclick=(e)=>{
-      const db=e.target.closest('.dots-btn');
-      if(db){e.preventDefault();e.stopPropagation();openEventDotMenu(db.dataset.evid);}
-    };
-  }
-}
-function renderEventFolder(){
-  const folder=state.eventFolders.find(x=>x.id===ui.eventFolderId);
-  if(!folder){ navigateToEvents(); return; }
-  const content=document.getElementById('appContent');
-  const q=ui.eventFolderSearch||'';
-  content.innerHTML=`<div class="quotes-toolbar">
-    <div class="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="efSearch" placeholder="Search ${esc(folder.name)}…" value="${esc(q)}">
-      ${q?`<button class="clear-btn" id="efClear">✕</button>`:''}
-    </div>
-  </div>
-  <div class="tagbar" id="efTagbar"></div>
-  <div class="event-list" id="eventList"></div>`;
-  renderEventFolderContent();
-  const si=document.getElementById('efSearch');
-  si.addEventListener('input',()=>{ ui.eventFolderSearch=si.value; renderEventFolderContent(); });
-  const clr=document.getElementById('efClear');
-  if(clr) clr.onclick=()=>{ ui.eventFolderSearch=''; ui.eventFolderFilter=null; renderEventFolder(); };
-}
-
-/* ---------- Event dot menu ---------- */
 function openEventDotMenu(eventId){
   const ev=state.eventItems.find(x=>x.id===eventId); if(!ev) return;
   const menu=document.getElementById('dotMenu'),back=document.getElementById('dmBackdrop');
@@ -1171,20 +1104,15 @@ function openEventDotMenu(eventId){
     closeDotMenu();
     if(confirm('Delete this event?')){
       state.eventItems=state.eventItems.filter(x=>x.id!==eventId);
-      writeStore();
-      if(ui.view==='eventFolder') renderEventFolderContent();
-      else renderEventsContent();
-      toast('Deleted',true);
+      writeStore(); renderEventsContent(); toast('Deleted',true);
     }
   };
 }
 
 /* ---------- Event editor ---------- */
 function openEventEditor(mode,folderId,eventId){
-  if(!state.eventFolders.length){ toast('Create an event folder first'); openAddEventFolder(); return; }
   const item=eventId?state.eventItems.find(x=>x.id===eventId):null;
-  const fid=folderId||(item&&item.folderId)||ui.eventFolderId||state.eventFolders[0].id;
-  editing={mode:'event-'+mode,folderId:fid,eventId,getTagPool:()=>eventTagPool(null),draftTags:item?[...(item.tags||[])]:[]}; 
+  editing={mode:'event-'+mode,eventId,getTagPool:()=>eventTagPool(null),draftTags:item?[...(item.tags||[])]:[]};
   const opt=`<span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(optional)</span>`;
   document.getElementById('modal').innerHTML=`
     <h2>${mode==='add'?'New event':'Edit event'}</h2>
@@ -1218,7 +1146,7 @@ function saveEventEditor(){
   const tags=editing.draftTags.slice();
   const now=Date.now();
   if(editing.mode==='event-add'){
-    state.eventItems.unshift({id:uid(),folderId:editing.folderId,title,date,author,description,tags,created:now});
+    state.eventItems.unshift({id:uid(),title,date,author,description,tags,created:now});
     toast('Event added',true);
   }else{
     const ev=state.eventItems.find(x=>x.id===editing.eventId);
@@ -1226,9 +1154,7 @@ function saveEventEditor(){
     toast('Saved',true);
   }
   writeStore(); closeModal();
-  if(ui.view==='eventFolder') renderEventFolderContent();
-  else if(ui.view==='events') renderEventsContent();
-  else renderApp();
+  if(ui.view==='events') renderEventsContent(); else renderApp();
 }
 function wireEventDelete(eventId){
   document.getElementById('delBtn').onclick=()=>{
@@ -1239,9 +1165,7 @@ function wireEventDelete(eventId){
     document.getElementById('dCancel').onclick=()=>{ left.innerHTML=`<button class="btn btn-quiet" id="delBtn">${I.trash} Delete</button>`; wireEventDelete(eventId); };
     document.getElementById('dYes').onclick=()=>{
       state.eventItems=state.eventItems.filter(x=>x.id!==eventId);
-      writeStore(); closeModal();
-      if(ui.view==='eventFolder') renderEventFolderContent(); else renderApp();
-      toast('Deleted',true);
+      writeStore(); closeModal(); if(ui.view==='events') renderEventsContent(); else renderApp(); toast('Deleted',true);
     };
   };
 }
@@ -1260,64 +1184,11 @@ function openEventRetag(eventId){
     <div class="modal-foot"><span></span><div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Save tags</button></div></div>`;
   renderDraftTags(); setupTagAutocomplete();
   document.getElementById('cancelBtn').onclick=closeModal;
-  document.getElementById('saveBtn').onclick=()=>{ ev.tags=editing.draftTags.slice(); writeStore(); closeModal(); if(ui.view==='eventFolder') renderEventFolderContent(); toast('Tags updated',true); };
+  document.getElementById('saveBtn').onclick=()=>{ ev.tags=editing.draftTags.slice(); writeStore(); closeModal(); if(ui.view==='events') renderEventsContent(); toast('Tags updated',true); };
   showModal(); setTimeout(()=>document.getElementById('tagInput').focus(),60);
 }
 
 /* ---------- Event folder management ---------- */
-function openAddEventFolder(){
-  document.getElementById('modal').innerHTML=`
-    <h2>New event folder</h2>
-    <div class="field"><label>Folder name</label><input type="text" id="efNameInput" placeholder="e.g. Travel, Work, Personal…" maxlength="60"></div>
-    <div class="modal-foot"><span></span><div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Create</button></div></div>`;
-  document.getElementById('cancelBtn').onclick=closeModal;
-  document.getElementById('saveBtn').onclick=()=>{
-    const name=(document.getElementById('efNameInput').value||'').trim();
-    if(!name){ toast('Please enter a name'); document.getElementById('efNameInput').focus(); return; }
-    const f={id:uid(),name,created:Date.now()};
-    state.eventFolders.push(f); writeStore(); closeModal(); navigateToEventFolder(f.id); toast('Folder created',true);
-  };
-  document.getElementById('efNameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();document.getElementById('saveBtn').click();} });
-  showModal(); setTimeout(()=>document.getElementById('efNameInput').focus(),60);
-}
-function openEditEventFolder(id){
-  const folder=state.eventFolders.find(x=>x.id===id); if(!folder) return;
-  const cnt=state.eventItems.filter(e=>e.folderId===id).length;
-  document.getElementById('modal').innerHTML=`
-    <h2>Edit folder</h2>
-    <div class="field"><label>Name</label><input type="text" id="efNameInput" value="${esc(folder.name)}" maxlength="60"></div>
-    <div class="modal-foot">
-      <div id="footLeft">${cnt===0?`<button class="btn btn-quiet" id="delEFBtn">${I.trash} Delete</button>`:`<span class="folder-del-msg">Remove events first</span>`}</div>
-      <div class="right"><button class="btn btn-ghost" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Save</button></div>
-    </div>`;
-  document.getElementById('cancelBtn').onclick=closeModal;
-  document.getElementById('saveBtn').onclick=()=>{
-    const name=(document.getElementById('efNameInput').value||'').trim();
-    if(!name){ toast('Please enter a name'); return; }
-    folder.name=name; writeStore(); closeModal(); renderEventsContent(); toast('Renamed',true);
-  };
-  if(cnt===0){
-    document.getElementById('delEFBtn').onclick=()=>{
-      state.eventFolders=state.eventFolders.filter(x=>x.id!==id); writeStore(); closeModal();
-      if(ui.eventFolderId===id) navigateToEvents(); else renderEventsContent(); toast('Folder deleted',true);
-    };
-  }
-  showModal(); setTimeout(()=>document.getElementById('efNameInput').focus(),60);
-}
-
-/* ---------- Copy / share ---------- */
-async function copyText(txt){
-  try{ await navigator.clipboard.writeText(txt); toast('Copied',true); }
-  catch(e){ const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied',true);}catch(_){toast('Could not copy');}document.body.removeChild(ta); }
-}
-async function shareText(txt){
-  if(navigator.share){try{await navigator.share({text:txt});}catch(e){}}
-  else{copyText(txt);toast('Copied — paste to share',true);}
-}
-
-
-/* ---------- Wire entry list events ---------- */
-/* ---------- Tag filter bar (folder view) ---------- */
 function renderTagBar(folderId){
   const bar=document.getElementById('tagbar'); if(!bar) return;
   const pool=tagPool(folderId);
@@ -1378,7 +1249,7 @@ function renderHomeContent(){
     <div class="home-row" id="eventsHomeRow">
       <span class="home-row-icon">${I.calendar}</span>
       <span class="home-row-name">Events</span>
-      <span class="home-row-count">${state.eventFolders.length} folder${state.eventFolders.length!==1?'s':''} &middot; ${state.eventItems.length} event${state.eventItems.length!==1?'s':''}</span>
+      <span class="home-row-count">${state.eventItems.length} event${state.eventItems.length!==1?'s':''}</span>
       <span style="color:var(--muted)">${I.chevron}</span>
     </div>
     <div class="home-row" id="meetingsHomeRow">
@@ -1962,9 +1833,6 @@ function updateHeader(){
     ba.innerHTML=`<div class="brand"><h1>Common<span class="amp">place</span></h1><p>Your personal collection</p></div>`;
   }else if(ui.view==='events'){
     ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}Events</button>`;
-  }else if(ui.view==='eventFolder'){
-    const ef=state.eventFolders.find(x=>x.id===ui.eventFolderId);
-    ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}${esc(ef?ef.name:'Folder')}</button>`;
   }else if(ui.view==='notes'){
     ba.innerHTML=`<button class="back-btn" id="backBtn">${I.chevL}Notes</button>`;
   }else if(ui.view==='quotes'){
@@ -1985,7 +1853,7 @@ function updateHeader(){
   }
   document.getElementById('backBtn')?.addEventListener('click',navigateBack);
   const fab=document.getElementById('fab');
-  fab.style.display=(['notes','folder','quotes','events','eventFolder','meetings','project'].includes(ui.view))?'grid':'none';
+  fab.style.display=(['notes','folder','quotes','events','meetings','project'].includes(ui.view))?'grid':'none';
 }
 
 /* ---------- Navigation ---------- */
@@ -1998,7 +1866,6 @@ function navigateBack(){
   if(ui.view==='entry'){ ui.view=ui.entryFrom||'home'; ui.entryId=null; renderApp(); }
   else if(ui.view==='meeting'){ navigateToProject(ui.meetingProjectId); }
   else if(ui.view==='project'){ navigateToMeetings(); }
-  else if(ui.view==='eventFolder'){ navigateToEvents(); }
   else if(ui.view==='folder'){ navigateToNotes(); }
   else navigateHome();
 }
@@ -2012,7 +1879,6 @@ function renderApp(){
   else if(ui.view==='entry') renderEntry();
   else if(ui.view==='quotes') renderQuotes();
   else if(ui.view==='events') renderEvents();
-  else if(ui.view==='eventFolder') renderEventFolder();
   else if(ui.view==='meetings') renderMeetings();
   else if(ui.view==='project') renderProject();
   else if(ui.view==='meeting') renderMeeting();
@@ -2496,8 +2362,7 @@ $id('fileInput').addEventListener('change',e=>{ if(e.target.files[0]) importData
 $id('fab').onclick=()=>{
   if(ui.view==='quotes') openQuoteEditor('add');
   else if(ui.view==='notes') openAddFolder();
-  else if(ui.view==='events') openAddEventFolder();
-  else if(ui.view==='eventFolder') openEventEditor('add',ui.eventFolderId);
+  else if(ui.view==='events') openEventEditor('add');
   else if(ui.view==='meetings') openAddProject();
   else if(ui.view==='project') openMeetingEditor('add',ui.meetingProjectId);
   else openEditor('add', ui.view==='folder'?ui.folderId:null);
