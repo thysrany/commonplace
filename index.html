@@ -137,16 +137,21 @@ header.top{display:flex;align-items:center;justify-content:space-between;gap:12p
 
 /* Quote cards */
 .quote-list{display:flex;flex-direction:column;gap:10px;}
-.quote-card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 14px 14px;}
-.qc-body{display:flex;align-items:flex-start;gap:6px;}
-.qc-content{flex:1;min-width:0;}
+.quote-card{background:var(--card);border:1px solid var(--line-soft);border-radius:var(--r);overflow:hidden;}
+.qc-sum{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;list-style:none;user-select:none;}
+.qc-sum::-webkit-details-marker{display:none;}
+.qc-preview{flex:1;min-width:0;font-family:var(--serif);font-size:15px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qc-chev{flex:0 0 auto;color:var(--muted);display:grid;place-items:center;transition:transform .2s ease;}
+.qc-chev svg{width:14px;height:14px;}
+details.quote-card[open] .qc-chev{transform:rotate(90deg);}
+.qc-expanded{padding:12px 14px 16px;border-top:1px solid var(--line-soft);}
 .qc-text{font-family:var(--serif);font-size:17px;line-height:1.55;color:var(--ink);display:block;margin-bottom:10px;}
 .qc-by{font-size:13px;color:var(--muted);font-weight:500;}
 .qc-by::before{content:"— ";color:var(--accent);}
 .qc-source{font-size:12px;color:var(--muted);font-style:italic;margin-top:2px;}
-.qc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
-.qc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--line-soft);}
-
+.qc-ctx{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft);}
+.qc-ctx-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px;}
+.qc-ctx-text{font-family:var(--serif);font-size:15px;line-height:1.65;color:var(--ink-soft);white-space:pre-wrap;}
 /* Quotes view */
 .quotes-toolbar{display:flex;gap:10px;margin-bottom:12px;}
 .quotes-toolbar .search{flex:1;}
@@ -605,7 +610,7 @@ function normalizeState(){
   if(!Array.isArray(state.meetingProjects)) state.meetingProjects=[];
   if(!Array.isArray(state.meetingItems)) state.meetingItems=[];
   state.entries.forEach(e=>{ if(!e.noteType) e.noteType='plain'; if(!Array.isArray(e.sections)) e.sections=[]; });
-  state.quotes.forEach(q=>{ if(!q.source) q.source=''; });
+  state.quotes.forEach(q=>{ if(!q.source) q.source=''; if(!q.context) q.context=''; });
   state.meetingItems.forEach(m=>{ if(!Array.isArray(m.actions)) m.actions=[]; m.actions.forEach(a=>{ if(!a.due) a.due=''; }); if(!Array.isArray(m.tags)) m.tags=[]; });
 }
 
@@ -778,16 +783,20 @@ function quoteTagPool(){
 function navigateToQuotes(){ ui.view='quotes'; ui.quotesSearch=''; ui.quotesFilter=null; renderApp(); }
 
 function quoteCard(q){
-  return `<article class="quote-card" data-qid="${q.id}">
-    <div class="qc-body">
-      <div class="qc-content">
-        <blockquote class="qc-text">${esc(q.text)}</blockquote>
-        ${q.author?`<div class="qc-by">${esc(q.author)}</div>`:''}
-        ${q.source?`<div class="qc-source">${esc(q.source)}</div>`:''}
-      </div>
+  const preview=q.text.replace(/\n/g,' ');
+  return `<details class="quote-card" data-qid="${q.id}">
+    <summary class="qc-sum">
+      <span class="qc-preview">${esc(preview)}</span>
+      <span class="qc-chev">${I.chevron}</span>
       <button class="dots-btn" data-qid="${q.id}" aria-label="Options">${I.dots}</button>
+    </summary>
+    <div class="qc-expanded">
+      <blockquote class="qc-text">${esc(q.text)}</blockquote>
+      ${q.author?`<div class="qc-by">${esc(q.author)}</div>`:''}
+      ${q.source?`<div class="qc-source">${esc(q.source)}</div>`:''}
+      ${q.context?`<div class="qc-ctx"><div class="qc-ctx-label">Meaning &amp; Context</div><div class="qc-ctx-text">${esc(q.context)}</div></div>`:''}
     </div>
-  </article>`;
+  </details>`;
 }
 
 function renderQuoteTagBar(){
@@ -818,8 +827,7 @@ function renderQuoteContent(){
   el.onclick=(e)=>{
     const db=e.target.closest('.dots-btn');
     if(db){ e.preventDefault(); e.stopPropagation(); openQuoteDotMenu(db.dataset.qid); }
-  };
-}
+  };}
 
 function renderQuotes(){
   const content=document.getElementById('appContent');
@@ -867,6 +875,7 @@ function openQuoteEditor(mode,quoteId){
     <div class="field"><label>Quote</label><textarea id="q_text" placeholder="The words you want to keep…">${item?esc(item.text||''):''}</textarea></div>
     <div class="field"><label>Author ${opt}</label><input type="text" id="q_author" placeholder="Who said it?" value="${item?esc(item.author||''):''}"></div>
     <div class="field"><label>Source ${opt}</label><input type="text" id="q_source" placeholder="Book, article, speech…" value="${item?esc(item.source||''):''}"></div>
+    <div class="field"><label>Meaning &amp; Context ${opt}</label><textarea id="q_context" placeholder="What does this mean to you? When or why does it apply?…" style="min-height:90px">${item?esc(item.context||''):''}</textarea></div>
     <div class="field"><label>Tags</label>
       <div class="tag-editor">
         <div class="ac-wrap"><input type="text" id="tagInput" placeholder="Type a tag…" autocomplete="off"><div class="ac-drop" id="tagDropdown"></div></div>
@@ -890,14 +899,15 @@ function saveQuoteEditor(){
   if(!text){ toast('Please add the quote text'); document.getElementById('q_text').focus(); return; }
   const author=(document.getElementById('q_author')?.value||'').trim();
   const source=(document.getElementById('q_source')?.value||'').trim();
+  const context=(document.getElementById('q_context')?.value||'').trim();
   const tags=editing.draftTags.slice();
   const now=Date.now();
   if(editing.mode==='quote-add'){
-    state.quotes.unshift({id:uid(),text,author,source,tags,created:now});
+    state.quotes.unshift({id:uid(),text,author,source,context,tags,created:now});
     toast('Quote added',true);
   }else{
     const q=state.quotes.find(x=>x.id===editing.quoteId);
-    if(q) Object.assign(q,{text,author,source,tags});
+    if(q) Object.assign(q,{text,author,source,context,tags});
     toast('Quote saved',true);
   }
   writeStore(); closeModal(); if(ui.view==='quotes') renderQuoteContent(); else renderHomeContent();
