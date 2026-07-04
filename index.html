@@ -772,7 +772,7 @@ function renderFeatured(){
     document.getElementById('fNew').onclick=()=>{ closeDotMenu(); ui.featuredId=null; renderFeatured(); };
   };
 }
-function quoteString(q){ return `"${q.text}"${q.author?' — '+q.author:''}${q.source?'\n'+q.source:''}`; }
+function quoteString(q){ return [`"${q.text}"`,q.author?'— '+q.author:'',q.source||'',q.context?'\nMeaning & Context\n'+q.context:''].filter(Boolean).join('\n'); }
 function quoteTagPool(){
   const map=new Map();
   state.quotes.forEach(q=>(q.tags||[]).forEach(t=>{const k=t.toLowerCase();if(!map.has(k))map.set(k,t);}));
