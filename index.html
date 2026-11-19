@@ -646,7 +646,7 @@ if(!state){ state=seed(); writeLocal(); }
 normalizeState(); migrateOldFormat();
 const ui={view:'home',folderId:null,entryId:null,entryFrom:'home',
   folderFilter:null,folderSearch:'',
-  notesSearch:'',notesFilter:null,
+  notesSearch:'',
   quotesSearch:'',quotesFilter:null,
   eventsSearch:'',eventsFilter:null,
   meetingsSearch:'',meetingsFilter:null,
@@ -1272,22 +1272,6 @@ function renderHome(){
 }
 
 /* ---------- Notes view (folder list) ---------- */
-function noteTagPool(){
-  const map=new Map();
-  state.entries.forEach(e=>(e.tags||[]).forEach(t=>{const k=t.toLowerCase();if(!map.has(k))map.set(k,t);}));
-  return [...map.values()].sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
-}
-function renderNotesTagBar(){
-  const bar=document.getElementById('ntTagbar'); if(!bar) return;
-  const pool=noteTagPool();
-  if(!pool.length){ bar.innerHTML=''; return; }
-  const active=ui.notesFilter;
-  let html=`<span class="lbl">Tags</span>`;
-  html+=`<button class="chip ${active===null?'active':''}" data-tag="">All</button>`;
-  html+=pool.map(t=>`<button class="chip ${active&&active.toLowerCase()===t.toLowerCase()?'active':''}" data-tag="${esc(t)}">${esc(t)}</button>`).join('');
-  bar.innerHTML=html;
-  bar.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{ ui.notesFilter=c.dataset.tag||null; renderNotesContent(); });
-}
 function renderNotes(){
   const content=document.getElementById('appContent');
   const q=ui.notesSearch||'';
@@ -1298,23 +1282,18 @@ function renderNotes(){
       ${q?`<button class="clear-btn" id="nsClear">✕</button>`:''}
     </div>
   </div>
-  <div class="tagbar" id="ntTagbar"></div>
   <div id="notesMain"></div>`;
-  renderNotesTagBar();
   renderNotesContent();
   const si=document.getElementById('notesSearchInput');
   si.addEventListener('input',()=>{ ui.notesSearch=si.value; renderNotesContent(); });
   const clr=document.getElementById('nsClear');
-  if(clr) clr.onclick=()=>{ ui.notesSearch=''; ui.notesFilter=null; renderNotes(); };
+  if(clr) clr.onclick=()=>{ ui.notesSearch=''; renderNotes(); };
 }
 function renderNotesContent(){
-  renderNotesTagBar();
   const el=document.getElementById('notesMain'); if(!el) return;
   const q=(ui.notesSearch||'').trim();
-  const f=ui.notesFilter;
-  if(q||f){
-    let results=q?searchEntries(q):[...state.entries].sort((a,b)=>b.created-a.created);
-    if(f) results=results.filter(e=>(e.tags||[]).some(t=>t.toLowerCase()===f.toLowerCase()));
+  if(q){
+    const results=searchEntries(q);
     el.innerHTML=`<div class="results-label">${results.length} note${results.length!==1?'s':''}</div>
       <div class="list" id="list">${results.length?results.map(e=>entryRow(e,true)).join(''):`<div class="empty-state"><div class="big">Nothing found.</div><p>Try different words or tags.</p></div>`}</div>`;
     wireList(document.getElementById('list'));
@@ -1858,7 +1837,7 @@ function updateHeader(){
 
 /* ---------- Navigation ---------- */
 function navigateHome(){ ui.view='home';ui.folderId=null;ui.entryId=null;ui.folderFilter=null;ui.folderSearch=''; renderApp(); }
-function navigateToNotes(){ ui.view='notes';ui.notesSearch='';ui.notesFilter=null; renderApp(); }
+function navigateToNotes(){ ui.view='notes';ui.notesSearch=''; renderApp(); }
 function navigateToFolder(id){ ui.view='folder';ui.folderId=id;ui.entryId=null;ui.folderFilter=null;ui.folderSearch=''; renderApp(); }
 function navigateToQuotes(){ ui.view='quotes';ui.quotesSearch='';ui.quotesFilter=null; renderApp(); }
 function navigateToEntry(entryId){ ui.entryFrom=ui.view; ui.view='entry'; ui.entryId=entryId; renderApp(); }
